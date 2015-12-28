@@ -16,12 +16,12 @@
 
 package org.dd4t.providers.impl;
 
-import com.tridion.broker.StorageException;
 import com.tridion.dcp.ComponentPresentation;
 import com.tridion.dcp.ComponentPresentationFactory;
-import com.tridion.storage.ComponentPresentationMeta;
-import com.tridion.storage.StorageTypeMapping;
-import com.tridion.storage.dao.ComponentPresentationMetaDAO;
+import com.tridion.meta.ComponentMeta;
+import com.tridion.meta.ComponentMetaFactory;
+import com.tridion.meta.ComponentPresentationMeta;
+import com.tridion.meta.ComponentPresentationMetaFactory;
 import com.tridion.util.TCMURI;
 import org.apache.commons.lang3.StringUtils;
 import org.dd4t.contentmodel.ComponentTemplate;
@@ -32,8 +32,6 @@ import org.dd4t.core.exceptions.SerializationException;
 import org.dd4t.core.providers.BaseBrokerProvider;
 import org.dd4t.core.util.Constants;
 import org.dd4t.providers.ComponentPresentationProvider;
-import org.dd4t.providers.util.DaoUtils;
-import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -137,23 +135,23 @@ public class BrokerComponentPresentationProvider extends BaseBrokerProvider impl
 	private org.dd4t.contentmodel.ComponentPresentation constructComponentPresentation (String componentSource, int publicationId, int componentId, int componentTemplateId, ComponentPresentation componentPresentation) {
 		try {
 
-			final ComponentPresentationMetaDAO componentPresentationMetaDAO = (ComponentPresentationMetaDAO) DaoUtils.getStorageDAO(publicationId, StorageTypeMapping.COMPONENT_PRESENTATION_META);
-			final ComponentPresentationMeta componentPresentationMeta = componentPresentationMetaDAO.findByPrimaryKey(publicationId, componentId, componentTemplateId);
+			final ComponentPresentationMeta componentPresentationMeta = new ComponentPresentationMetaFactory(publicationId).getMeta(componentId, componentTemplateId);
+			ComponentMeta componentMeta = new ComponentMetaFactory(publicationId).getMeta(componentId);
 
 			final org.dd4t.contentmodel.ComponentPresentation componentPresentationResult = this.concreteComponentPresentation.newInstance();
 			final ComponentTemplate componentTemplate = this.concreteComponentTemplateImpl.newInstance();
 			componentPresentationResult.setRawComponentContent(componentSource);
 			componentPresentationResult.setIsDynamic(componentPresentation.isDynamic());
 			componentTemplate.setId(new TCMURI(publicationId, componentTemplateId, 32, 0).toString());
-			componentTemplate.setTitle(componentPresentationMeta.getTemplateMeta().getTitle());
-			final DateTime dateTime = new DateTime(componentPresentationMeta.getTemplateMeta().getLastPublishDate());
-			componentTemplate.setRevisionDate(dateTime);
+//			todo implement getTitle() and getLastPublishDate()
+//			componentTemplate.setTitle(componentPresentationMeta.getTemplateMeta().getTitle());
+//			final DateTime dateTime = new DateTime(componentPresentationMeta.getTemplateMeta().getLastPublishDate());
+//			componentTemplate.setRevisionDate(dateTime);
 			final Map<String, Field> metadata = new HashMap<>();
 
 			// TODO: this is a hack
 			// Component Template Custom Meta is not published with
-			// the component template, so we cannot read the viewName.
-			// Therefore, the only supported way for now is use the lower cased
+			// the component template, so we cannot read the viewName. Therefore, the only supported way for now is use the lower cased
 			// template name as view model name...
 
 			// We should actually fix this in the Generate Dynamic Component TBB to also
@@ -170,7 +168,7 @@ public class BrokerComponentPresentationProvider extends BaseBrokerProvider impl
 			componentTemplate.setMetadata(metadata);
 			componentPresentationResult.setComponentTemplate(componentTemplate);
 			return componentPresentationResult;
-		} catch (InstantiationException | StorageException | IllegalAccessException e) {
+		} catch (InstantiationException | IllegalAccessException e) {
 			LOG.error(e.getLocalizedMessage(), e);
 		}
 		return null;

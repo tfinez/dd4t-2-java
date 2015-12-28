@@ -49,8 +49,13 @@ public class EHCacheProvider implements PayloadCacheProvider, CacheInvalidator,
 	public static final String CACHE_NAME = "DD4T-Objects";
 	public static final String CACHE_NAME_DEPENDENCY = "DD4T-Dependencies";
 	public static final String DEPENDENT_KEY_FORMAT = "%s:%s";
+
+	{
+		CacheManager.getInstance().addCache(CACHE_NAME);
+		CacheManager.getInstance().addCache(CACHE_NAME_DEPENDENCY);
+	}
 	
-	private final Cache cache = CacheManager.getInstance().getCache(CACHE_NAME);
+	private final Cache cache = CacheManager.create().getCache(CACHE_NAME);
 	private final Cache dependencyCache = CacheManager.create().getCache(CACHE_NAME_DEPENDENCY);
 
 	private static final Logger LOG = LoggerFactory.getLogger(EHCacheProvider.class);
@@ -142,7 +147,7 @@ public class EHCacheProvider implements PayloadCacheProvider, CacheInvalidator,
 		} else {
 			LOG.debug("Disable cache for Preview Session Token: {}",
 					TridionUtils.getSessionPreviewToken());
-			return new CacheElementImpl<T>((T) null, true);
+			return new CacheElementImpl<T>(null, true);
 		}
 	}
 

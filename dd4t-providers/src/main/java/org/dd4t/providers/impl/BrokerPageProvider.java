@@ -24,14 +24,10 @@ import com.tridion.broker.querying.criteria.operators.AndCriteria;
 import com.tridion.broker.querying.filter.LimitFilter;
 import com.tridion.broker.querying.sorting.SortDirection;
 import com.tridion.broker.querying.sorting.SortParameter;
+import com.tridion.content.PageContentFactory;
 import com.tridion.data.CharacterData;
+import com.tridion.meta.PageMeta;
 import com.tridion.storage.ItemMeta;
-import com.tridion.storage.PageMeta;
-import com.tridion.storage.StorageManagerFactory;
-import com.tridion.storage.StorageTypeMapping;
-import com.tridion.storage.dao.ItemDAO;
-import com.tridion.storage.dao.ItemTypeSelector;
-import com.tridion.storage.dao.PageDAO;
 import org.dd4t.core.caching.CacheElement;
 import org.dd4t.core.caching.CacheType;
 import org.dd4t.core.exceptions.ItemNotFoundException;
@@ -64,13 +60,7 @@ public class BrokerPageProvider extends BaseBrokerProvider implements PageProvid
 	@Override
 	public String getPageContentById (int id, int publication) throws ItemNotFoundException, SerializationException {
 
-		CharacterData data = null;
-		try {
-			PageDAO pageDAO = (PageDAO) StorageManagerFactory.getDAO(publication, StorageTypeMapping.PAGE);
-			data = pageDAO.findByPrimaryKey(publication, id);
-		} catch (StorageException e) {
-			LOG.error(e.getMessage(),e);
-		}
+		CharacterData data = new PageContentFactory().getPageContent(publication, id);
 
 		if (data == null) {
 			throw new ItemNotFoundException("Unable to find page by id '" + id + "' and publication '" + publication + "'.");
@@ -93,8 +83,8 @@ public class BrokerPageProvider extends BaseBrokerProvider implements PageProvid
 	 */
 	@Override
 	public String getPageContentByURL(String url, int publication) throws ItemNotFoundException, SerializationException {
-		PageMeta meta = getPageMetaByURL(url, publication);
-		return getPageContentById(meta.getItemId(), meta.getPublicationId());
+		TCMURI tcmuri = loadTcmuriByUrlAndPubId(url, publication);
+		return getPageContentById(tcmuri.getItemId(), publication);
 	}
 
 	@Override public String getPageContentById (final String tcmUri) throws ItemNotFoundException, ParseException, SerializationException {
@@ -113,12 +103,13 @@ public class BrokerPageProvider extends BaseBrokerProvider implements PageProvid
 	public PageMeta getPageMetaById(int id, int publication) throws ItemNotFoundException {
 
 		PageMeta meta = null;
-		try {
-			ItemDAO itemDAO = (ItemDAO) StorageManagerFactory.getDAO(publication, StorageTypeMapping.PAGE_META);
-			meta = (PageMeta) itemDAO.findByPrimaryKey(publication, id);
-		} catch (StorageException e) {
-			LOG.error(e.getMessage(),e);
-		}
+		//todo implement using CDaaS
+//		try {
+//			ItemDAO itemDAO = (ItemDAO) StorageManagerFactory.getDAO(publication, StorageTypeMapping.PAGE_META);
+//			meta = (PageMeta) itemDAO.findByPrimaryKey(publication, id);
+//		} catch (StorageException e) {
+//			LOG.error(e.getMessage(),e);
+//		}
 
 		if (meta == null) {
 			throw new ItemNotFoundException("Unable to find page by id '" + id + "' and publication '" + publication + "'.");
@@ -137,18 +128,13 @@ public class BrokerPageProvider extends BaseBrokerProvider implements PageProvid
 	 */
 	public PageMeta getPageMetaByURL(String url, int publication) throws ItemNotFoundException {
 
+		//todo realize using CDaaS
+//		PageMeta meta = new DynamicMetaRetriever().getPageMetaByURL(url);
+//		if (meta == null) {
+//			throw new ItemNotFoundException("Unable to find page by url '" + url + "' and publication '" + publication + "'.");
+//		}
+
 		PageMeta meta = null;
-		try {
-			ItemDAO itemDAO = (ItemDAO) StorageManagerFactory.getDAO(publication, StorageTypeMapping.PAGE_META);
-			meta = itemDAO.findByPageURL(publication, url);
-		} catch (StorageException e) {
-			LOG.error(e.getMessage(),e);
-		}
-
-		if (meta == null) {
-			throw new ItemNotFoundException("Unable to find page by url '" + url + "' and publication '" + publication + "'.");
-		}
-
 		return meta;
 	}
 
@@ -163,12 +149,13 @@ public class BrokerPageProvider extends BaseBrokerProvider implements PageProvid
 	public String getPageListByPublicationId(int publication) throws ItemNotFoundException {
 
 		List<ItemMeta> itemMetas = null;
-		try {
-			ItemDAO itemDAO = (ItemDAO) StorageManagerFactory.getDAO(publication, StorageTypeMapping.PAGE_META);
-			itemMetas = itemDAO.findAll(publication, ItemTypeSelector.PAGE);
-		} catch (StorageException e) {
-			LOG.error(e.getMessage(),e);
-		}
+		//todo implement using CDaaS
+//		try {
+//			ItemDAO itemDAO = (ItemDAO) StorageManagerFactory.getDAO(publication, StorageTypeMapping.PAGE_META);
+//			itemMetas = itemDAO.findAll(publication, ItemTypeSelector.PAGE);
+//		} catch (StorageException e) {
+//			LOG.error(e.getMessage(),e);
+//		}
 
 		if (itemMetas == null || itemMetas.isEmpty()) {
 			throw new ItemNotFoundException("Unable to find page URL list by publication '" + publication + "'.");
@@ -176,7 +163,7 @@ public class BrokerPageProvider extends BaseBrokerProvider implements PageProvid
 
 		StringBuilder result = new StringBuilder();
 		for (ItemMeta itemMeta : itemMetas) {
-			result.append(((PageMeta) itemMeta).getUrl()).append("\r\n");
+			result.append(((PageMeta) itemMeta).getPath()).append("\r\n");
 		}
 
 		return result.toString();
@@ -190,8 +177,41 @@ public class BrokerPageProvider extends BaseBrokerProvider implements PageProvid
 
 		String key = getKey(CacheType.PAGE_EXISTS, url);
 		CacheElement<Integer> cacheElement = cacheProvider.loadPayloadFromLocalCache(key);
-		Integer result = null;
+		Integer result;
 
+		if (cacheElement.isExpired()) {
+			synchronized (cacheElement) {
+				if (cacheElement.isExpired()) {
+					cacheElement.setExpired(false);
+
+					TCMURI tcmuri = loadTcmuriByUrlAndPubId(url, publicationId);
+					if (tcmuri == null) {
+						result = 0;
+						cacheElement.setPayload(result);
+						cacheProvider.storeInItemCache(key, cacheElement);
+						LOG.debug("Fetched a Page exist check with key: {} from cache", key);
+					} else {
+						result = 1;
+						cacheElement.setPayload(result);
+						cacheProvider.storeInItemCache(key, cacheElement, tcmuri.getPublicationId(), tcmuri.getItemId());
+						LOG.debug("Stored Page exist check with key: {} in cache", key);
+					}
+				} else {
+					result = cacheElement.getPayload();
+				}
+			}
+		} else {
+			LOG.debug("Fetched Page exist check with key: {} from cache", key);
+			result = cacheElement.getPayload();
+		}
+
+		return result != null && (result == 1);
+	}
+
+	private TCMURI loadTcmuriByUrlAndPubId(final String url, final int publicationId) {
+		String key = getKey(CacheType.PAGE_TCMURI, url);
+		CacheElement<TCMURI> cacheElement = cacheProvider.loadPayloadFromLocalCache(key);
+		TCMURI tcmuri = null;
 		if (cacheElement.isExpired()) {
 			synchronized (cacheElement) {
 				if (cacheElement.isExpired()) {
@@ -207,39 +227,32 @@ public class BrokerPageProvider extends BaseBrokerProvider implements PageProvid
 						String[] results = tridionQuery.executeQuery();
 						if (results != null && results.length > 0) {
 							LOG.debug("Found 1 result");
-							result = 1;
-							TCMURI tcmuri = new TCMURI(results[0]);
-							cacheElement.setPayload(result);
+							tcmuri = new TCMURI(results[0]);
+							cacheElement.setPayload(tcmuri);
 							cacheProvider.storeInItemCache(key, cacheElement, tcmuri.getPublicationId(), tcmuri.getItemId());
 						} else {
 							LOG.debug("No results");
-							result = 0;
-							cacheElement.setPayload(result);
+							cacheElement.setPayload(null);
 							cacheProvider.storeInItemCache(key, cacheElement);
 						}
 					} catch (StorageException | ParseException e) {
 						LOG.error(e.getLocalizedMessage(),e);
 					}
-					LOG.debug("Stored Page exist check with key: {} in cache", key);
+					LOG.debug("Stored TCMURI with key: {} in cache", key);
 				} else {
-					LOG.debug("Fetched a Page exist check with key: {} from cache", key);
-					result = cacheElement.getPayload();
+					LOG.debug("Fetched a TCMURI with key: {} from cache", key);
+					tcmuri = cacheElement.getPayload();
 				}
 			}
 		} else {
-			LOG.debug("Fetched Page exist check with key: {} from cache", key);
-			result = cacheElement.getPayload();
+			LOG.debug("Fetched TCMURI with key: {} from cache", key);
+			tcmuri = cacheElement.getPayload();
 		}
-
-		return result != null && (result == 1);
+		return tcmuri;
 	}
 
 	@Override
 	public TCMURI getPageIdForUrl (final String url, final int publicationId) throws ItemNotFoundException, SerializationException {
-		PageMeta pageMeta = getPageMetaByURL(url,publicationId);
-		if (pageMeta != null) {
-			return new TCMURI(publicationId,pageMeta.getItemId(),pageMeta.getItemType(),pageMeta.getMajorVersion());
-		}
-		throw new ItemNotFoundException("Page Id for URL not found.");
+		return loadTcmuriByUrlAndPubId(url, publicationId);
 	}
 }

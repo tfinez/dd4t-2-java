@@ -18,11 +18,6 @@ package org.dd4t.providers.impl;
 
 import com.tridion.broker.StorageException;
 import com.tridion.storage.RelatedKeyword;
-import com.tridion.storage.StorageManagerFactory;
-import com.tridion.storage.StorageTypeMapping;
-import com.tridion.storage.dao.BaseDAO;
-import com.tridion.storage.dao.WrappableDAO;
-import com.tridion.storage.persistence.JPABaseDAO;
 import com.tridion.taxonomies.Keyword;
 import com.tridion.taxonomies.TaxonomyFactory;
 import com.tridion.util.TCMURI;
@@ -35,6 +30,12 @@ import java.text.ParseException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+//import com.tridion.storage.StorageManagerFactory;
+//import com.tridion.storage.StorageTypeMapping;
+//import com.tridion.storage.dao.BaseDAO;
+//import com.tridion.storage.dao.WrappableDAO;
+//import com.tridion.storage.persistence.JPABaseDAO;
 
 /**
  * Provides access to taxonomies published to a Content Delivery database. It returns keywords with all their parent/
@@ -87,8 +88,9 @@ public class BrokerTaxonomyProvider extends BaseBrokerProvider implements Taxono
 		queryParams.put("publicationId", publicationId);
 		queryParams.put("taxonomyId", taxonomyTcmUri.getItemId());
 		queryParams.put("itemType", itemType);
-
-		return getJPADAO(publicationId).executeQueryListResult(SELECT_RELATED_KEYWORDS, queryParams);
+		//todo implement
+		return null;
+//		return getJPADAO(publicationId).executeQueryListResult(SELECT_RELATED_KEYWORDS, queryParams);
 	}
 
 	/**
@@ -112,30 +114,33 @@ public class BrokerTaxonomyProvider extends BaseBrokerProvider implements Taxono
 		queryParams.put("taxonomyId", taxonomyTcmUri.getItemId());
 		queryParams.put("schemaId", schemaTcmUri.getItemId());
 
-		return getJPADAO(publicationId).executeQueryListResult(SELECT_RELATED_COMPONENTS_BY_SCHEMA, queryParams);
+		//todo implement
+		return null;
+//		return getJPADAO(publicationId).executeQueryListResult(SELECT_RELATED_COMPONENTS_BY_SCHEMA, queryParams);
 	}
 
 	/*
 	Looks for the JPABaseDAO defined in the storage config. If XPM wrappers are used, it searches inside the wrapper.
 	 */
-	private JPABaseDAO getJPADAO(int publicationId) throws StorageException {
-		BaseDAO baseDAO = StorageManagerFactory.getDAO(publicationId, StorageTypeMapping.ITEM_META);
-		boolean loop = true;
-
-		while (loop) {
-			if (baseDAO instanceof WrappableDAO) {
-				WrappableDAO wrappableDAO = (WrappableDAO) baseDAO;
-				baseDAO = wrappableDAO.getWrapped();
-			} else {
-				loop = false;
-			}
-
-			if (baseDAO instanceof JPABaseDAO) {
-				return (JPABaseDAO) baseDAO;
-			}
-		}
-		throw new StorageException("Cannot find JPABaseDAO. Please check your storage bindings.");
-	}
+	//todo do not use DAOs from CD, use CDaaS
+//	private JPABaseDAO getJPADAO(int publicationId) throws StorageException {
+//		BaseDAO baseDAO = StorageManagerFactory.getDAO(publicationId, StorageTypeMapping.ITEM_META);
+//		boolean loop = true;
+//
+//		while (loop) {
+//			if (baseDAO instanceof WrappableDAO) {
+//				WrappableDAO wrappableDAO = (WrappableDAO) baseDAO;
+//				baseDAO = wrappableDAO.getWrapped();
+//			} else {
+//				loop = false;
+//			}
+//
+//			if (baseDAO instanceof JPABaseDAO) {
+//				return (JPABaseDAO) baseDAO;
+//			}
+//		}
+//		throw new StorageException("Cannot find JPABaseDAO. Please check your storage bindings.");
+//	}
 
 	@Override public String getTaxonomyByURI (final String taxonomyURI, final boolean resolveContent) throws ItemNotFoundException, SerializationException {
 		return null;

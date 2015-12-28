@@ -17,15 +17,11 @@
 package org.dd4t.providers.impl;
 
 import com.tridion.ItemTypes;
-import com.tridion.broker.StorageException;
+import com.tridion.content.BinaryFactory;
+import com.tridion.data.BinaryData;
+import com.tridion.dynamiccontent.DynamicMetaRetriever;
 import com.tridion.meta.BinaryMeta;
 import com.tridion.meta.BinaryMetaFactory;
-import com.tridion.storage.BinaryContent;
-import com.tridion.storage.BinaryVariant;
-import com.tridion.storage.StorageManagerFactory;
-import com.tridion.storage.StorageTypeMapping;
-import com.tridion.storage.dao.BinaryContentDAO;
-import com.tridion.storage.dao.BinaryVariantDAO;
 import org.dd4t.contentmodel.Binary;
 import org.dd4t.contentmodel.impl.BinaryDataImpl;
 import org.dd4t.contentmodel.impl.BinaryImpl;
@@ -37,6 +33,7 @@ import org.dd4t.providers.BinaryProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.text.ParseException;
 
 /**
@@ -75,23 +72,17 @@ public class BrokerBinaryProvider extends BaseBrokerProvider implements BinaryPr
 			//binaryMeta.getPath();
 			//binaryMeta.getVariantId();
 
-
-			final BinaryContentDAO contentDAO;
-			BinaryContent content = null;
-			try {
-				contentDAO = (BinaryContentDAO) StorageManagerFactory.getDAO(binaryUri.getPublicationId(), StorageTypeMapping.BINARY_CONTENT);
-				content = contentDAO.findByPrimaryKey(binaryUri.getPublicationId(), binaryUri.getItemId(), null);
-			} catch (StorageException e) {
-				LOG.error(e.getMessage(), e);
-			}
-
-
+			BinaryData content = new BinaryFactory().getBinary(binaryUri.getPublicationId(), binaryUri.getItemId(), binaryMeta.getVariantId());
 			if (content == null) {
 				throw new ItemNotFoundException("Unable to find binary content by id:" + binaryUri.toString());
 			}
 
 			final BinaryDataImpl binaryData = new BinaryDataImpl();
-			binaryData.setBytes(content.getContent().clone());
+			try {
+				binaryData.setBytes(content.getBytes().clone());
+			} catch (IOException e) {
+				throw new ItemNotFoundException("Error reading binary content by id:" + binaryUri.toString());
+			}
 			binary.setBinaryData(binaryData);
 			return binary;
 		}
@@ -108,21 +99,17 @@ public class BrokerBinaryProvider extends BaseBrokerProvider implements BinaryPr
 	 */
 	@Override
 	public byte[] getBinaryContentById (int id, int publication) throws ItemNotFoundException {
-		BinaryContentDAO contentDAO;
-		BinaryContent content = null;
-		try {
-			contentDAO = (BinaryContentDAO) StorageManagerFactory.getDAO(publication, StorageTypeMapping.BINARY_CONTENT);
-			content = contentDAO.findByPrimaryKey(publication, id, null);
-		} catch (StorageException e) {
-			LOG.error(e.getMessage(),e);
-		}
-
+		BinaryData content = new BinaryFactory().getBinary(id, publication);
 
 		if (content == null) {
 			throw new ItemNotFoundException("Unable to find binary content by id '" + id + "' and publication '" + publication + "'.");
 		}
 
-		return content.getContent();
+		try {
+			return content.getBytes();
+		} catch (IOException e) {
+			throw new ItemNotFoundException("Error reading binary content by id:" + id);
+		}
 	}
 
 	/**
@@ -136,57 +123,8 @@ public class BrokerBinaryProvider extends BaseBrokerProvider implements BinaryPr
 	@Override
 	public byte[] getBinaryContentByURL (String url, int publication) throws ItemNotFoundException {
 
-		BinaryVariant variant = getBinaryVariantByURL(url, publication);
-		return getBinaryContentById(variant.getBinaryId(), variant.getPublicationId());
+		BinaryMeta binaryMeta = new DynamicMetaRetriever().getBinaryMetaByURL(url);
+		return getBinaryContentById((int) binaryMeta.getId(), publication);
 	}
 
-	/**
-	 * Not in the interface just to keep the tridion dependency out.
-	 * @param id          int representing the item id
-	 * @param publication int representing the publication id
-	 * @return BinaryVariant the binary identified by id and publication
-	 * @throws ItemNotFoundException if the item identified by id and publication was not found
-	 */
-
-	public BinaryVariant getBinaryVariantById(int id, int publication) throws ItemNotFoundException {
-
-		BinaryVariant variant = null;
-		try {
-			BinaryVariantDAO variantDAO = (BinaryVariantDAO) StorageManagerFactory.getDAO(publication, StorageTypeMapping.BINARY_VARIANT);
-			variant = variantDAO.findByPrimaryKey(publication, id, null);
-		} catch (StorageException e) {
-			LOG.error(e.getMessage(),e);
-		}
-
-		if (variant == null) {
-			throw new ItemNotFoundException("Unable to find binary by id '" + id + "' and publication '" + publication + "'.");
-		}
-
-		return variant;
-	}
-
-	/**
-	 * Not in the interface just to keep the tridion dependency out.
-	 * @param url         string representing the path portion of the URL of the binary
-	 * @param publication int representing the publication id
-	 * @return BinaryVariant the binary identified by url and publication
-	 * @throws ItemNotFoundException if the item identified by url and publication was not found
-	 */
-
-	public BinaryVariant getBinaryVariantByURL(String url, int publication) throws ItemNotFoundException {
-
-		BinaryVariant variant = null;
-		try {
-			BinaryVariantDAO variantDAO = (BinaryVariantDAO) StorageManagerFactory.getDAO(publication, StorageTypeMapping.BINARY_VARIANT);
-			variant = variantDAO.findByURL(publication, url);
-		} catch (StorageException e) {
-			LOG.error(e.getMessage(),e);
-		}
-
-		if (variant == null) {
-			throw new ItemNotFoundException("Unable to find binary by url '" + url + "' and publication '" + publication + "'.");
-		}
-
-		return variant;
-	}
 }
