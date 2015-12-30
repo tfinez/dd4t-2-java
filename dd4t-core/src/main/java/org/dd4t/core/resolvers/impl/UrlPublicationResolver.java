@@ -17,9 +17,9 @@
 package org.dd4t.core.resolvers.impl;
 
 import org.apache.commons.lang3.StringUtils;
+import org.dd4t.contentmodel.PublicationDescriptor;
 import org.dd4t.core.resolvers.PublicationResolver;
 import org.dd4t.core.util.HttpUtils;
-import org.dd4t.contentmodel.PublicationDescriptor;
 import org.dd4t.providers.PublicationProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -16,9 +16,9 @@
 
 package org.dd4t.providers;
 
-import java.util.Collection;
-
 import org.dd4t.core.caching.Cachable;
+
+import java.util.Collection;
 
 public interface CacheProvider {
     /**

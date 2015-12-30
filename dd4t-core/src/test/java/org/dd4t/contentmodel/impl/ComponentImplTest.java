@@ -6,7 +6,6 @@ import org.dd4t.core.exceptions.SerializationException;
 import org.dd4t.core.serializers.Serializer;
 import org.dd4t.core.serializers.impl.SerializerFactory;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.HashMap;

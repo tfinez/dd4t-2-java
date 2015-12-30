@@ -18,7 +18,11 @@ package org.dd4t.contentmodel.impl;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import org.dd4t.contentmodel.*;
+import org.dd4t.contentmodel.ComponentPresentation;
+import org.dd4t.contentmodel.GenericPage;
+import org.dd4t.contentmodel.HasMetadata;
+import org.dd4t.contentmodel.PageTemplate;
+import org.dd4t.contentmodel.StructureGroup;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -16,10 +16,7 @@
 
 package org.dd4t.springmvc.siteedit;
 
-import java.text.ParseException;
-
-import javax.servlet.ServletRequest;
-
+import com.tridion.util.TCMURI;
 import org.dd4t.contentmodel.ComponentPresentation;
 import org.dd4t.contentmodel.Field;
 import org.dd4t.contentmodel.Page;
@@ -28,7 +25,8 @@ import org.dd4t.springmvc.util.ApplicationContextProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.tridion.util.TCMURI;
+import javax.servlet.ServletRequest;
+import java.text.ParseException;
 
 /**
  * The class, with static methods only, serves views and controllers with SiteEdit tags. The point

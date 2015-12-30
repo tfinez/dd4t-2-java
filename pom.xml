@@ -14,7 +14,6 @@
         <module>dd4t-compatibility</module>
         <module>dd4t-databind</module>
         <module>dd4t-providers</module>
-        <module>dd4t-providers-rs</module>
         <module>dd4t-test</module>
         <module>dd4t-caching</module>
         <module>dd4t-mvc-support</module>

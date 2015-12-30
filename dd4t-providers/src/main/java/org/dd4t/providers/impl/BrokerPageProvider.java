@@ -84,7 +84,7 @@ public class BrokerPageProvider extends BaseBrokerProvider implements PageProvid
 
         pageResult.setLastPublishDate(pageMeta.getLastPublishDate());
         pageResult.setRevisionDate(pageMeta.getModificationDate());
-        pageResult.setContentSource(getPageContentById(pageMeta.getItemId(), pageMeta.getPublicationId()));
+        pageResult.setContentSource(getPageContentById(pageMeta.getId(), pageMeta.getPublicationId()));
         return pageResult;
     }
 

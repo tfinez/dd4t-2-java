@@ -18,7 +18,12 @@ package org.dd4t.contentmodel.impl;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import org.dd4t.contentmodel.*;
+import org.dd4t.contentmodel.Field;
+import org.dd4t.contentmodel.GenericComponent;
+import org.dd4t.contentmodel.HasContent;
+import org.dd4t.contentmodel.HasMetadata;
+import org.dd4t.contentmodel.HasMultimedia;
+import org.dd4t.contentmodel.Multimedia;
 
 import java.util.HashMap;
 import java.util.Map;
