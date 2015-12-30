@@ -18,6 +18,7 @@ package org.dd4t.core.util;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.CharEncoding;
 import org.dd4t.core.exceptions.SerializationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,7 +40,11 @@ import java.util.zip.GZIPOutputStream;
  */
 public class CompressionUtils {
 
-    private final static Logger LOG = LoggerFactory.getLogger(CompressionUtils.class);
+    private static final Logger LOG = LoggerFactory.getLogger(CompressionUtils.class);
+
+    private CompressionUtils () {
+
+    }
 
     /**
      * Compresses a given object to a GZipped byte array.
@@ -48,7 +53,7 @@ public class CompressionUtils {
      * @return byte[] representing the compressed object bytes
      * @throws SerializationException if something goes wrong with the streams
      */
-    public static <T> byte[] compressGZipGeneric(T object) throws SerializationException {
+    public static <T> byte[] compressGZipGeneric (T object) throws SerializationException {
         ByteArrayOutputStream baos = null;
         GZIPOutputStream gos = null;
         ObjectOutputStream oos = null;
@@ -79,7 +84,7 @@ public class CompressionUtils {
      * @return byte[] representing the compressed content bytes
      * @throws SerializationException if something goes wrong with the streams
      */
-    public static byte[] compressGZip(String content) throws SerializationException {
+    public static byte[] compressGZip (String content) throws SerializationException {
         ByteArrayOutputStream baos = null;
         GZIPOutputStream gos = null;
 
@@ -87,7 +92,7 @@ public class CompressionUtils {
             baos = new ByteArrayOutputStream();
             gos = new GZIPOutputStream(baos);
 
-            gos.write(content.getBytes("UTF-8"));
+            gos.write(content.getBytes(CharEncoding.UTF_8));
             gos.close();
 
             return baos.toByteArray();
@@ -108,7 +113,7 @@ public class CompressionUtils {
      * @return the deserialized object of the given class type
      * @throws SerializationException if something goes wrong with the streams
      */
-    public static <T> T decompressGZipGeneric(byte[] bytes) throws SerializationException {
+    public static <T> T decompressGZipGeneric (byte[] bytes) throws SerializationException {
         T result = null;
         ByteArrayInputStream bais = null;
         GZIPInputStream gis = null;
@@ -139,7 +144,7 @@ public class CompressionUtils {
      * @return the deserialized object of the given class type
      * @throws SerializationException if something goes wrong with the streams
      */
-    public static String decompressGZip(byte[] bytes) throws SerializationException {
+    public static String decompressGZip (byte[] bytes) throws SerializationException {
         String result = null;
         ByteArrayInputStream bais = null;
         GZIPInputStream gis = null;
@@ -148,7 +153,7 @@ public class CompressionUtils {
             bais = new ByteArrayInputStream(bytes);
             gis = new GZIPInputStream(bais);
 
-            result = (String) IOUtils.toString(gis);
+            result = IOUtils.toString(gis);
         } catch (IOException ioe) {
             LOG.error("Decompression failed.", ioe);
             throw new SerializationException("Failed to decompress byte array", ioe);
@@ -166,7 +171,7 @@ public class CompressionUtils {
      * @param byteArray the byte array to encode
      * @return String representing the encoded array
      */
-    public static String encodeBase64(byte[] byteArray) {
+    public static String encodeBase64 (byte[] byteArray) {
         return Base64.encodeBase64String(byteArray);
     }
 
@@ -176,11 +181,11 @@ public class CompressionUtils {
      * @param message the byte array to encode
      * @return String representing the encoded array
      */
-    public static String encodeBase64(String message) {
+    public static String encodeBase64 (String message) {
         if (message == null) {
             return null;
         } else {
-            return encodeBase64(message.getBytes(Charset.forName("UTF-8")));
+            return encodeBase64(message.getBytes(Charset.forName(CharEncoding.UTF_8)));
         }
     }
 
@@ -190,16 +195,16 @@ public class CompressionUtils {
      * @param message String representing the message to decode
      * @return byte[] representing the decoded array
      */
-    public static byte[] decodeBase64(String message) {
+    public static byte[] decodeBase64 (String message) {
         if (Base64.isBase64(message)) {
             return Base64.decodeBase64(message);
         }
 
         byte[] result;
         try {
-            result = message.getBytes("UTF-8");
+            result = message.getBytes(CharEncoding.UTF_8);
         } catch (UnsupportedEncodingException uee) {
-            LOG.warn("Unsupported Encoding Exception: " + uee.getMessage());
+            LOG.error(uee.getLocalizedMessage(), uee);
             result = message.getBytes();
         }
         return result;

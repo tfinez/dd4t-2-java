@@ -20,21 +20,21 @@ import org.joda.time.DateTime;
 
 public interface PageTemplate extends Item, HasMetadata {
 
-	/**
-	 * Get the file extension
-	 *
-	 * @return the file extension
-	 */
-	public String getFileExtension ();
+    /**
+     * Get the file extension
+     *
+     * @return the file extension
+     */
+    String getFileExtension ();
 
-	/**
-	 * Set the file extension
-	 *
-	 * @param fileExtension
-	 */
-	public void setFileExtension (String fileExtension);
+    /**
+     * Set the file extension
+     *
+     * @param fileExtension
+     */
+    void setFileExtension (String fileExtension);
 
-	public DateTime getRevisionDate ();
+    DateTime getRevisionDate ();
 
-	public void setRevisionDate (DateTime date);
+    void setRevisionDate (DateTime date);
 }

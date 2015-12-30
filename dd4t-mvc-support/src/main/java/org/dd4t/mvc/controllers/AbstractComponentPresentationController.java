@@ -20,120 +20,144 @@ import org.apache.commons.lang3.StringUtils;
 import org.dd4t.contentmodel.ComponentPresentation;
 import org.dd4t.core.exceptions.FactoryException;
 import org.dd4t.core.factories.impl.ComponentPresentationFactoryImpl;
-import org.dd4t.mvc.utils.PublicationResolverFactoryImpl;
+import org.dd4t.core.util.TCMURI;
 import org.dd4t.mvc.utils.ComponentUtils;
 import org.dd4t.mvc.utils.RenderUtils;
-import org.dd4t.core.util.TCMURI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import java.text.ParseException;
+
 /**
  * dd4t-2
- *
+ * <p/>
  * Extend this class in your own web project for default functionality.
- *
- * Do NOT add stuff here, as this will in the near future be loaded through maven only!
- *
+ * <p/>
+ * Do not add stuff here, as this will be loaded as library only.
+ * <p/>
+ * Important Note: concrete implementing classes will need to add the
+ * {@literal @RequestMapping} annotations!
  */
 @Controller
 public class AbstractComponentPresentationController {
 
-	private static final Logger LOG = LoggerFactory.getLogger(AbstractComponentPresentationController.class);
+    private static final Logger LOG = LoggerFactory.getLogger(AbstractComponentPresentationController.class);
 
-	@Autowired private ComponentPresentationFactoryImpl componentPresentationFactory;
+    @Resource
+    private ComponentPresentationFactoryImpl componentPresentationFactory;
 
-	private String componentViewPath = "";
+    private String componentViewPath = "";
 
-	/**
-	 * Renders the component/model, which must be put on the request using
-	 * {@link ComponentUtils#setComponentPresentation}.
-	 *
-	 * @param componentViewName the viewName to be used to render this component
-	 * @param componentId       the id as an int, not a tcm uri!
-	 * @param request           the request on which the component must be present
-	 * @return the view name to render
-	 */
-	@RequestMapping(value = {"/{componentViewName}/{componentId}.dcp"}, method = {RequestMethod.GET, RequestMethod.HEAD}) public String showComponentPresentation (@PathVariable final String componentViewName, @PathVariable final int componentId, final HttpServletRequest request) {
-		return showComponentPresentation(null, componentViewName, componentId, request);
-	}
+    /**
+     * Renders the component/model, which must be put on the request using
+     * {@link ComponentUtils#setComponentPresentation}.
+     *
+     * @param componentViewName the viewName to be used to render this component
+     * @param componentId       the id as an int, not a tcm uri!
+     * @param request           the request on which the component must be present
+     * @return the view name to render
+     */
+    public String showComponentPresentation (@PathVariable final String componentViewName, @PathVariable final int componentId, final HttpServletRequest request) {
+        return showComponentPresentation(null, componentViewName, componentId, request);
+    }
 
-	/**
-	 * Renders the component template response, the exact mapping needs to be
-	 * determined.
-	 *
-	 * @param componentViewPrefix the prefix to use for the view
-	 * @param componentViewName   the viewName to be used to render this component
-	 * @param componentId         the id as an int, not a tcm uri!
-	 * @param request             the request on which the component must be present
-	 * @return the view name to render
-	 */
-	@RequestMapping(value = {"/{componentViewPrefix}/{componentViewName}/{componentId}.dcp"}, method = {RequestMethod.GET, RequestMethod.HEAD})
-	public String showComponentPresentation (@PathVariable final String componentViewPrefix, @PathVariable final String componentViewName, @PathVariable final int componentId, final HttpServletRequest request) {
-		LOG.debug(">> {} component with viewPrefix: {}, viewName: {} and componentId: {}", new Object[]{request.getMethod(), componentViewPrefix, componentViewName, componentId});
+    /**
+     * Renders the component template response, the exact mapping needs to be
+     * determined.
+     * <p/>
+     * TODO: split this logic. It is now used for two different things:
+     * 1. For attempting to fetch a DCP which is on a Page
+     * 2. Attempt to load a DCP based on the incoming URL. Which is something totally different, as we need the publication path
+     * to actually do this.
+     * <p/>
+     * For now, if you use this controller to load DCPs, make sure that the componentViewPrefix variable is actually the publication path,
+     * or simply extend this controller and be creative with the ComponentPresentationFactory and resolving Publication Ids
+     *
+     * @param componentViewPrefix the prefix to use for the view
+     * @param componentViewName   the viewName to be used to render this component
+     * @param componentId         the id as an int, not a tcm uri!
+     * @param request             the request on which the component must be present
+     * @return the view name to render
+     */
 
-		int publicationId = PublicationResolverFactoryImpl.getInstance().getPublicationResolver().getPublicationId();
-		ComponentPresentation componentPresentation = ComponentUtils.getComponentPresentation(request);
+    public String showComponentPresentation (@PathVariable final String componentViewPrefix, @PathVariable final String componentViewName, @PathVariable final int componentId, final HttpServletRequest request) {
+        LOG.debug(">> {} component with viewPrefix: {}, viewName: {} and componentId: {}", new Object[]{request.getMethod(), componentViewPrefix, componentViewName, componentId});
 
-		if (componentPresentation == null || componentPresentation.isDynamic()) {
-			// In normal operation, this action is called from the server to render embedded component presentations.
-			// In that case, the component should be present on the request already.
-			// However, it is also possible to retrieve a DCP directly from the browser.
+        ComponentPresentation componentPresentation = ComponentUtils.getComponentPresentation(request);
 
-			if (componentPresentation != null) {
-				try {
-					componentPresentation = componentPresentationFactory.getComponentPresentation(new TCMURI(publicationId, componentId, 16, 0).toString(), componentPresentation.getComponentTemplate().getId());
+        if (componentPresentation == null || componentPresentation.isDynamic()) {
+            // In normal operation, this action is called from the server to render embedded component presentations.
+            // In that case, the component should be present on the request already.
+            // However, it is also possible to retrieve a DCP directly from the browser.
 
-				} catch (FactoryException e) {
-					LOG.error(e.getLocalizedMessage(), e);
-				}
-			} else {
-				LOG.debug("No component found in request.");
-			}
-		}
+            if (componentPresentation != null) {
+                try {
 
-		if (componentPresentation == null) {
-			// still no component, now we should fail
-			throw new ResourceNotFoundException();
-		}
+                    final TCMURI ctUri = new TCMURI(componentPresentation.getComponentTemplate().getId());
+                    componentPresentation = componentPresentationFactory.getComponentPresentation(new TCMURI(ctUri.getPublicationId(), componentId, 16, 0).toString(), componentPresentation.getComponentTemplate().getId());
 
-		RenderUtils.setDynamicComponentOnRequest(request,componentPresentation.getComponent());
-		RenderUtils.setViewModelsOnRequest(request,componentPresentation);
+                } catch (FactoryException | ParseException e) {
+                    LOG.error(e.getLocalizedMessage(), e);
+                }
+            }
 
-		LOG.debug("Rendering component presentation with template '{}' and component id '{}'", componentViewName, componentId);
+//			else {
+//
+//
+//
+//				int publicationId = PublicationResolverFactory.getPublicationResolver().getPublicationId();
+//
+//				// Depending on whether the incoming path actually is a publication path
+//				if (publicationId <= 0) {
+//					LOG.warn("Cannot get publication Id!");
+//				} else {
+//					componentPresentation = componentPresentationFactory.getComponentPresentation()
+//				}
+//			}
+        }
 
-		if (StringUtils.isNotEmpty(componentViewPrefix)) {
-			return getComponentViewName(componentViewPrefix + "/" + componentViewName);
-		} else {
-			return getComponentViewName(componentViewName);
-		}
-	}
+        if (componentPresentation == null) {
+            // still no component, now we should fail
+            throw new ResourceNotFoundException();
+        }
 
-	private String getComponentViewName (final String tridionName) {
-		return RenderUtils.fixUrl(getComponentViewPath() + tridionName.trim());
-	}
+        RenderUtils.setDynamicComponentOnRequest(request, componentPresentation.getComponent());
+        RenderUtils.setViewModelsOnRequest(request, componentPresentation);
 
-	/**
-	 * @return String the component view path
-	 */
-	public String getComponentViewPath () {
-		return componentViewPath;
-	}
+        LOG.debug("Rendering component presentation with template '{}' and component id '{}'", componentViewName, componentId);
 
-	/**
-	 * @param componentViewPath , sets the component view path relative to the view resolver path
-	 */
-	public void setComponentViewPath (final String componentViewPath) {
-		this.componentViewPath = componentViewPath;
-	}
+        if (StringUtils.isNotEmpty(componentViewPrefix)) {
+            return getComponentViewName(componentViewPrefix + "/" + componentViewName);
+        } else {
+            return getComponentViewName(componentViewName);
+        }
+    }
 
-	@ResponseStatus(value = HttpStatus.NOT_FOUND) public static class ResourceNotFoundException extends RuntimeException {
-	}
+    private String getComponentViewName (final String tridionName) {
+        return RenderUtils.fixUrl(getComponentViewPath() + tridionName.trim());
+    }
+
+    /**
+     * @return String the component view path
+     */
+    public String getComponentViewPath () {
+        return componentViewPath;
+    }
+
+    /**
+     * @param componentViewPath , sets the component view path relative to the view resolver path
+     */
+    public void setComponentViewPath (final String componentViewPath) {
+        this.componentViewPath = componentViewPath;
+    }
+
+    @ResponseStatus (value = HttpStatus.NOT_FOUND)
+    public static class ResourceNotFoundException extends RuntimeException {
+    }
 }

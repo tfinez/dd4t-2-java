@@ -45,18 +45,19 @@ public enum CacheType {
 	COMPONENTS_BY_SCHEMA_IN_KEYWORD("CBSK"),
 	PUBLICATION_META("PUB");
 
-	private String id;
+    private String id;
 
-	/**
-	 * Initialization constructor
-	 *
-	 * @param id String representing the value of the enumeration value
-	 */
-	CacheType(String id) {
-		this.id = id;
-	}
+    /**
+     * Initialization constructor
+     *
+     * @param id String representing the value of the enumeration value
+     */
+    CacheType (String id) {
+        this.id = id;
+    }
 
-	public String toString() {
-		return id;
-	}
+    @Override
+    public String toString () {
+        return id;
+    }
 }

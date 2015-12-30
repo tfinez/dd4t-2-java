@@ -17,6 +17,8 @@
 package org.dd4t.contentmodel.impl;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import org.dd4t.contentmodel.FieldSet;
 import org.dd4t.contentmodel.Item;
 
 import java.util.HashMap;
@@ -24,51 +26,73 @@ import java.util.Map;
 
 /**
  * Base class for all tridion items
- *
- * The latest DD4T version has uppercase start characters in elements.
+ * <p/>
+ * Note: The latest DD4T version has uppercase start characters in elements.
  *
  * @author Quirijn Slings, Raimond Kempees
  */
-public abstract class BaseItem extends AbstractModel implements Item {
+public abstract class BaseItem implements Item {
 
-    @JsonProperty("Id")
+    @JsonProperty ("Id")
     private String id;
 
-    @JsonProperty("Title")
+    @JsonProperty ("Title")
     private String title;
 
-    @JsonProperty("CustomProperties")
+    @JsonProperty ("CustomProperties")
     private Map<String, Object> customProperties = new HashMap<>();
 
-    public String getId() {
+    @JsonProperty (value = "ExtensionData", required = false)
+    @JsonDeserialize (contentAs = FieldSetImpl.class)
+    private Map<String, FieldSet> extensionData;
+
+    @Override
+    public String getId () {
         return id;
     }
 
-    public void setId(String id) {
+    @Override
+    public void setId (String id) {
         this.id = id;
     }
 
-    public String getTitle() {
+    @Override
+    public String getTitle () {
         return title;
     }
 
-    public void setTitle(String title) {
+    @Override
+    public void setTitle (String title) {
         this.title = title;
     }
 
-    public Map<String, Object> getCustomProperties() {
+    @Override
+    public Map<String, Object> getCustomProperties () {
         return customProperties;
     }
 
-    public void setCustomProperties(Map<String, Object> customProperties) {
+    @Override
+    public void setCustomProperties (Map<String, Object> customProperties) {
         this.customProperties = customProperties;
     }
 
-    public void addCustomProperty(String key, Object value) {
+    @Override
+    public void addCustomProperty (String key, Object value) {
         customProperties.put(key, value);
     }
 
-    public Object getCustomProperty(String key) {
+    @Override
+    public Object getCustomProperty (String key) {
         return customProperties.get(key);
+    }
+
+    @Override
+    public Map<String, FieldSet> getExtensionData () {
+        return this.extensionData;
+    }
+
+    @Override
+    public void setExtensionData (Map<String, FieldSet> extensionData) {
+        this.extensionData = extensionData;
     }
 }

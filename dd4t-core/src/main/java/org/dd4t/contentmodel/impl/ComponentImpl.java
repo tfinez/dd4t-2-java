@@ -25,16 +25,20 @@ import java.util.Map;
 
 public class ComponentImpl extends BaseComponent implements GenericComponent, HasContent, HasMetadata, HasMultimedia {
 
-	@JsonProperty("ComponentType") @JsonDeserialize(as = ComponentImpl.ComponentType.class)
+    @JsonProperty ("ComponentType")
+    @JsonDeserialize (as = ComponentImpl.ComponentType.class)
     protected ComponentType componentType;
 
-	@JsonProperty("Fields") @JsonDeserialize(contentAs = BaseField.class)
+    @JsonProperty ("Fields")
+    @JsonDeserialize (contentAs = BaseField.class)
     private Map<String, Field> content;
 
-	@JsonProperty("Multimedia") @JsonDeserialize(as = MultimediaImpl.class)
+    @JsonProperty ("Multimedia")
+    @JsonDeserialize (as = MultimediaImpl.class)
     private Multimedia multimedia;
 
-    @JsonProperty("EclId") @JsonDeserialize(as = String.class)
+    @JsonProperty ("EclId")
+    @JsonDeserialize (as = String.class)
     private String eclId;
 
     /**
@@ -42,7 +46,8 @@ public class ComponentImpl extends BaseComponent implements GenericComponent, Ha
      *
      * @return a map of field objects representing the content
      */
-    public Map<String, Field> getContent() {
+    @Override
+    public Map<String, Field> getContent () {
         if (content == null) {
             content = new HashMap<String, Field>();
         }
@@ -52,7 +57,8 @@ public class ComponentImpl extends BaseComponent implements GenericComponent, Ha
     /**
      * Set the content
      */
-    public void setContent(Map<String, Field> content) {
+    @Override
+    public void setContent (Map<String, Field> content) {
         this.content = content;
     }
 
@@ -61,7 +67,8 @@ public class ComponentImpl extends BaseComponent implements GenericComponent, Ha
      *
      * @return the component type
      */
-    public ComponentType getComponentType() {
+    @Override
+    public ComponentType getComponentType () {
         return componentType;
     }
 
@@ -70,7 +77,8 @@ public class ComponentImpl extends BaseComponent implements GenericComponent, Ha
      *
      * @param componentType
      */
-    public void setComponentType(ComponentType componentType) {
+    @Override
+    public void setComponentType (ComponentType componentType) {
         this.componentType = componentType;
     }
 
@@ -80,7 +88,7 @@ public class ComponentImpl extends BaseComponent implements GenericComponent, Ha
      * @return the multimedia object
      */
     @Override
-    public Multimedia getMultimedia() {
+    public Multimedia getMultimedia () {
         return multimedia;
     }
 
@@ -88,16 +96,16 @@ public class ComponentImpl extends BaseComponent implements GenericComponent, Ha
      * Set the multimedia object
      */
     @Override
-    public void setMultimedia(Multimedia multimedia) {
+    public void setMultimedia (Multimedia multimedia) {
         this.multimedia = multimedia;
     }
 
     @Override
-    public String getEclId() {
+    public String getEclId () {
         return this.eclId;
     }
 
-    public void setEclId(String eclId) {
+    public void setEclId (String eclId) {
         this.eclId = eclId;
     }
 }

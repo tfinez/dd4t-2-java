@@ -16,18 +16,23 @@
 
 package org.dd4t.contentmodel;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public enum FieldType {
 
     TEXT(0), MULTILINETEXT(1), XHTML(2), KEYWORD(3), EMBEDDED(4), MULTIMEDIALINK(5),
     COMPONENTLINK(6), EXTERNALLINK(7), NUMBER(8), DATE(9), UNKNOWN(-1);
 
+    private static final Logger LOG = LoggerFactory.getLogger(FieldType.class);
     private final int value;
 
-    FieldType(int value) {
+
+    FieldType (int value) {
         this.value = value;
     }
 
-    public static FieldType findByValue(int value) {
+    public static FieldType findByValue (int value) {
         for (FieldType fieldType : values()) {
             if (fieldType.getValue() == value) {
                 return fieldType;
@@ -37,20 +42,22 @@ public enum FieldType {
         return UNKNOWN;
     }
 
-    public static FieldType findByName(String name) {
+    public static FieldType findByName (String name) {
         try {
             return FieldType.valueOf(name.toUpperCase());
         } catch (IllegalArgumentException iae) {
+            LOG.error(iae.getLocalizedMessage(), iae);
             try {
                 int value = Integer.parseInt(name);
                 return findByValue(value);
             } catch (NumberFormatException nfe) {
+                LOG.error(nfe.getLocalizedMessage(), nfe);
                 return UNKNOWN;
             }
         }
     }
 
-    public int getValue() {
+    public int getValue () {
         return value;
     }
 }

@@ -28,21 +28,22 @@ public class BinaryDataImpl implements BinaryData {
 
     private byte[] bytes;
 
-    public byte[] getBytes() {
+    @Override
+    public byte[] getBytes () {
         return this.bytes.clone();
     }
 
-    public void setBytes(final byte[] bytes) {
+    public void setBytes (final byte[] bytes) {
         this.bytes = bytes.clone();
     }
 
     @Override
-    public InputStream getInputStream() {
+    public InputStream getInputStream () {
         return new ByteArrayInputStream(bytes);
     }
 
     @Override
-    public long getDataSize() {
+    public long getDataSize () {
         return bytes == null ? 0 : bytes.length;
     }
 }

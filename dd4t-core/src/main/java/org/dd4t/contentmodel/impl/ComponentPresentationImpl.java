@@ -22,49 +22,53 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import org.dd4t.contentmodel.Component;
 import org.dd4t.contentmodel.ComponentPresentation;
 import org.dd4t.contentmodel.ComponentTemplate;
+import org.dd4t.contentmodel.FieldSet;
 import org.dd4t.core.databind.BaseViewModel;
 
 import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Class representing a component presentation which holds a component template and a component.
+ * Class representing a Tridion Component Presentation object.
  *
- *  TODO: API changes!
- *
- * @author bjornl
+ * @author bjornl, rai, sdl
  */
-public class ComponentPresentationImpl extends AbstractModel implements ComponentPresentation {
+public class ComponentPresentationImpl implements ComponentPresentation {
 
-    @JsonProperty("Component")
-    @JsonDeserialize(as = ComponentImpl.class)
+    @JsonProperty ("Component")
+    @JsonDeserialize (as = ComponentImpl.class)
     private Component component;
 
-    @JsonProperty("ComponentTemplate")
-    @JsonDeserialize(as = ComponentTemplateImpl.class)
+    @JsonProperty ("ComponentTemplate")
+    @JsonDeserialize (as = ComponentTemplateImpl.class)
     private ComponentTemplate componentTemplate;
 
-    @JsonProperty("IsDynamic")
+    @JsonProperty (value = "ExtensionData", required = false)
+    @JsonDeserialize (contentAs = FieldSetImpl.class)
+    private Map<String, FieldSet> extensionData;
+
+    @JsonProperty ("IsDynamic")
     private boolean isDynamic;
 
-    @JsonProperty("RenderedContent")
+    @JsonProperty ("RenderedContent")
     private String renderedContent;
 
-    @JsonProperty("OrderOnPage")
+    @JsonProperty ("OrderOnPage")
     private int orderOnPage;
 
     @JsonIgnore
-    private Map<String,BaseViewModel> baseViewModels;
+    private Map<String, BaseViewModel> baseViewModels;
 
-	@JsonIgnore
-	private String rawComponentContent;
+    @JsonIgnore
+    private String rawComponentContent;
 
     /**
      * Get the component
      *
      * @return the component
      */
-    public Component getComponent() {
+    @Override
+    public Component getComponent () {
         return component;
     }
 
@@ -73,7 +77,8 @@ public class ComponentPresentationImpl extends AbstractModel implements Componen
      *
      * @param component
      */
-    public void setComponent(Component component) {
+    @Override
+    public void setComponent (Component component) {
         this.component = component;
     }
 
@@ -82,7 +87,8 @@ public class ComponentPresentationImpl extends AbstractModel implements Componen
      *
      * @return the component template
      */
-    public ComponentTemplate getComponentTemplate() {
+    @Override
+    public ComponentTemplate getComponentTemplate () {
         return componentTemplate;
     }
 
@@ -91,65 +97,87 @@ public class ComponentPresentationImpl extends AbstractModel implements Componen
      *
      * @param componentTemplate
      */
-    public void setComponentTemplate(ComponentTemplate componentTemplate) {
+    @Override
+    public void setComponentTemplate (ComponentTemplate componentTemplate) {
         this.componentTemplate = componentTemplate;
     }
 
-    public String getRenderedContent() {
+    @Override
+    public String getRenderedContent () {
         return renderedContent;
     }
 
-    public void setRenderedContent(String renderedContent) {
+    @Override
+    public void setRenderedContent (String renderedContent) {
         this.renderedContent = renderedContent;
     }
 
     @Override
-    public boolean isDynamic() {
+    public boolean isDynamic () {
         return isDynamic;
     }
 
-    public void setIsDynamic(final boolean isDynamic) {
+    @Override
+    public void setIsDynamic (final boolean isDynamic) {
         this.isDynamic = isDynamic;
     }
 
-    public int getOrderOnPage() {
+    public int getOrderOnPage () {
         return orderOnPage;
     }
 
-    public void setOrderOnPage(final int orderOnPage) {
+    @Override
+    public void setOrderOnPage (final int orderOnPage) {
         this.orderOnPage = orderOnPage;
     }
 
-    @Override public Map<String, BaseViewModel> getAllViewModels () {
+    @Override
+    public Map<String, BaseViewModel> getAllViewModels () {
         if (this.baseViewModels == null) {
             return new HashMap<>();
         }
         return this.baseViewModels;
     }
 
-    @Override public void setViewModel (final Map<String, BaseViewModel> models) {
+    @Override
+    public void setViewModel (final Map<String, BaseViewModel> models) {
         this.baseViewModels = models;
     }
 
-    @Override public BaseViewModel getViewModel (String key) {
+    @Override
+    public BaseViewModel getViewModel (String key) {
         if (this.baseViewModels != null && this.baseViewModels.containsKey(key)) {
             return this.baseViewModels.get(key);
         }
         return null;
     }
 
-	/**
-	 * Sets the raw component content form the broker.
-	 * Needed to build DCP strong models and to
-	 * have all needed meta information on the CP and CT.
-	 *
-	 * @param rawComponentContent the Json or XML Component String from the broker.
-	 */
-	@Override public void setRawComponentContent (final String rawComponentContent) {
-		this.rawComponentContent = rawComponentContent;
-	}
+    /**
+     * Sets the raw component content form the broker.
+     * Needed to build DCP strong models and to
+     * have all needed meta information on the CP and CT.
+     *
+     * @param rawComponentContent the Json or XML Component String from the broker.
+     */
+    @Override
+    public void setRawComponentContent (final String rawComponentContent) {
+        this.rawComponentContent = rawComponentContent;
+    }
 
-	@Override public String getRawComponentContent () {
-		return this.rawComponentContent;
-	}
+    @Override
+    public String getRawComponentContent () {
+        return this.rawComponentContent;
+    }
+
+    @Override
+    public Map<String, FieldSet> getExtensionData () {
+        return extensionData;
+    }
+
+    @Override
+    public void setExtensionData (final Map<String, FieldSet> extensionData) {
+        this.extensionData = extensionData;
+    }
+
+
 }

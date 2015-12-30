@@ -24,28 +24,30 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.dd4t.contentmodel.impl.PageImpl;
 import org.dd4t.core.exceptions.SerializationException;
+import org.dd4t.core.util.CompressionUtils;
 import org.dd4t.databind.DataBindFactory;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.support.FileSystemXmlApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import javax.xml.stream.XMLStreamException;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.zip.GZIPInputStream;
 
 public class DD4TModelConverter {
 
-	public static void main (String[] args) throws IOException, XMLStreamException, SerializationException {
+	public static void main (String[] args) throws IOException, XMLStreamException, SerializationException, URISyntaxException {
 
 		// Load Spring
-		ApplicationContext context = new FileSystemXmlApplicationContext ("dd4t-test/target/classes/application-context.xml");
+		ApplicationContext context = new ClassPathXmlApplicationContext("application-context.xml");
 
 
 //		System.out.println(testXml + xml2 + xml3);
 		String completeXml = FileUtils.readFileToString(new File("dd4t-test/target/classes/xml-without-java-xslt.xml"));
 //
-		String homepage = FileUtils.readFileToString(new File("dd4t-test/target/classes/homepage.json"));
+		String homepage = FileUtils.readFileToString(new File(ClassLoader.getSystemResource("test.json").toURI()));
 		//System.out.println(completeXml);
 		//deserializeXmlJackson(completeXml);
 		deserializeJson(homepage);
@@ -78,7 +80,7 @@ public class DD4TModelConverter {
 	// TODO: OrderOnPage always is 0 in the JSon
 
 	private static void deserializeJson (String content) throws IOException, SerializationException {
-		String content1 = decodeAndDecompressContent(content);//test4;//
+		String content1 = CompressionUtils.decompressGZip(CompressionUtils.decodeBase64(content));//test4;//
 
 		PageImpl page = DataBindFactory.buildPage(content1, PageImpl.class);
 		System.out.println(content1);

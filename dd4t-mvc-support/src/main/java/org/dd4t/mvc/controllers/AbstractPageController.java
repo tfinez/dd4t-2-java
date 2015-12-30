@@ -32,8 +32,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 
 import javax.annotation.Resource;
 import javax.servlet.DispatcherType;
@@ -47,153 +45,153 @@ import java.util.TimeZone;
 
 /**
  * dd4t-2
- *
+ * <p/>
  * Extend this class in your own web project for default functionality.
- *
- * Do NOT add stuff here, as this will in the near future be loaded through maven only!
+ * <p/>
+ * Do NOT add stuff here, as this will in the near future be loaded as library through maven only.
  *
  * @author R. Kempees
  */
 @Controller
 public abstract class AbstractPageController {
-	private static final Logger LOG = LoggerFactory.getLogger(AbstractPageController.class);
-	private static final TimeZone GMT = TimeZone.getTimeZone("GMT");
-	private static final String LAST_MODIFIED = "Last-Modified";
-	private static final String DATE_FORMAT = "EEE, dd MMM yyyy HH:mm:ss zzz";
+    private static final Logger LOG = LoggerFactory.getLogger(AbstractPageController.class);
+    private static final TimeZone GMT = TimeZone.getTimeZone("GMT");
+    private static final String LAST_MODIFIED = "Last-Modified";
+    private static final String DATE_FORMAT = "EEE, dd MMM yyyy HH:mm:ss zzz";
 
-	@Resource
-	protected PageFactoryImpl pageFactory;
+    @Resource
+    protected PageFactoryImpl pageFactory;
 
-	@Resource
-	protected PublicationResolver publicationResolver;
+    @Resource
+    protected PublicationResolver publicationResolver;
 
-	@Resource
-	protected PropertiesService propertiesService;
+    @Resource
+    protected PropertiesService propertiesService;
 
-	private String pageViewPath = "";
-	/**
-	 * Boolean indicating if context path on the page URL should be removed, defaults to true
-	 */
-	private boolean removeContextPath = false;
+    private String pageViewPath = "";
+    /**
+     * Boolean indicating if context path on the page URL should be removed, defaults to true
+     */
+    private boolean removeContextPath = false;
 
-	/**
-	 * All page requests are handled by this method. The page meta XML is
-	 * queried based on the request URI, the page meta XML contains the actual
-	 * view name to be rendered.
-	 */
-	@RequestMapping(value = {"/**/*.html", "/**/*.txt", "/**/*.xml"}, method = {RequestMethod.GET, RequestMethod.HEAD})
-	public String showPage(Model model, HttpServletRequest request, HttpServletResponse response) throws IOException {
-		final String urlToFetch = HttpUtils.appendDefaultPageIfRequired(HttpUtils.getCurrentURL(request));
-		String url = adjustLocalErrorUrl(request, urlToFetch);
-		url = HttpUtils.normalizeUrl(url);
+    /**
+     * All page requests are handled by this method. The page meta XML is
+     * queried based on the request URI, the page meta XML contains the actual
+     * view name to be rendered.
+     * <p/>
+     * Important Note: concrete implementing classes will need to add the
+     * {@literal @RequestMapping} annotations!
+     */
 
-		LOG.debug(">> {} page {} with dispatcher type {}", new Object[]{request.getMethod(), url, request.getDispatcherType().toString()});
-		try {
-			if (StringUtils.isEmpty(url)) {
-				// url is not valid, throw an ItemNotFoundException
-				throw new ItemNotFoundException("Local Page Url could not be resolved: " + urlToFetch + " (probably publication url could not be resolved)");
-			}
+    public String showPage (Model model, HttpServletRequest request, HttpServletResponse response) throws IOException {
+        final String urlToFetch = HttpUtils.appendDefaultPageIfRequired(HttpUtils.getCurrentURL(request));
+        String url = adjustLocalErrorUrl(request, urlToFetch);
+        url = HttpUtils.normalizeUrl(url);
 
-			Page pageModel = pageFactory.findPageByUrl(url, publicationResolver.getPublicationId());
+        LOG.debug(">> {} page {} with dispatcher type {}", new Object[]{request.getMethod(), url, request.getDispatcherType().toString()});
+        try {
+            if (StringUtils.isEmpty(url)) {
+                // url is not valid, throw an ItemNotFoundException
+                throw new ItemNotFoundException("Page Url was empty or could not be resolved.");
+            }
 
-			DateTime lastPublishDate = pageModel.getLastPublishedDate();
+            Page pageModel = pageFactory.findPageByUrl(url, publicationResolver.getPublicationId());
 
-			response.setHeader(LAST_MODIFIED, createDateFormat().format(lastPublishDate.toDate()));
+            DateTime lastPublishDate = pageModel != null ? pageModel.getLastPublishedDate() : Constants.THE_YEAR_ZERO;
 
-			model.addAttribute(Constants.REFERER, request.getHeader(HttpHeaders.REFERER));
-			model.addAttribute(Constants.PAGE_MODEL_KEY, pageModel);
-			model.addAttribute(Constants.PAGE_REQUEST_URI, HttpUtils.appendDefaultPageIfRequired(request.getRequestURI()));
+            response.setHeader(LAST_MODIFIED, createDateFormat().format(lastPublishDate.toDate()));
 
-			response.setContentType(HttpUtils.getContentTypeByExtension(url));
-			return getPageViewName(pageModel);
+            model.addAttribute(Constants.REFERER, request.getHeader(HttpHeaders.REFERER));
+            model.addAttribute(Constants.PAGE_MODEL_KEY, pageModel);
+            model.addAttribute(Constants.PAGE_REQUEST_URI, HttpUtils.appendDefaultPageIfRequired(request.getRequestURI()));
 
-		} catch (ItemNotFoundException e) {
+            response.setContentType(HttpUtils.getContentTypeByExtension(url));
+            return getPageViewName(pageModel);
 
-			LOG.warn("Page with url '{}' could not be found.", url);
-			response.sendError(HttpServletResponse.SC_NOT_FOUND);
-		} catch (FactoryException e) {
-			if (e.getCause() instanceof ItemNotFoundException) {
-				LOG.warn("Page with url '{}' could not be found.", url);
-				response.sendError(HttpServletResponse.SC_NOT_FOUND);
-			} else {
-				LOG.error("Factory Error.", e);
-				response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-			}
-		}
+        } catch (ItemNotFoundException e) {
+            LOG.trace(e.getLocalizedMessage(), e);
+            LOG.warn("Page with url '{}' could not be found.", url);
+            response.sendError(HttpServletResponse.SC_NOT_FOUND);
+        } catch (FactoryException e) {
+            if (e.getCause() instanceof ItemNotFoundException) {
+                LOG.warn("Page with url '{}' could not be found.", url);
+                response.sendError(HttpServletResponse.SC_NOT_FOUND);
+            } else {
+                LOG.error("Factory Error.", e);
+                response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            }
+        }
 
-		return null;
-	}
+        return null;
+    }
 
-	private String getDefaultPublicationUrl() {
-		return propertiesService.getProperty(Constants.DEFAULT_PUBLICATION_URL_CONFIGURATION_KEY);
-	}
+    private String adjustLocalErrorUrl (final HttpServletRequest request, final String url) {
 
-
-	private String adjustLocalErrorUrl(HttpServletRequest request, String url) {
-		if (request.getDispatcherType() == DispatcherType.ERROR) {
-			url = publicationResolver.getLocalPageUrl(url);
-		}
-		return url;
-	}
-
-
-	public String getPageViewName(final Page page) {
-		String viewName;
-		if (null != page.getPageTemplate().getMetadata() && page.getPageTemplate().getMetadata().containsKey("viewName")) {
-			viewName = (String) page.getPageTemplate().getMetadata().get("viewName").getValues().get(0);
-		} else {
-			viewName = page.getPageTemplate().getTitle();
-		}
-
-		return RenderUtils.fixUrl(getPageViewPath() + viewName.trim());
-	}
-
-	/**
-	 * @return the pageViewPrefix
-	 */
-	public String getPageViewPath() {
-		return pageViewPath;
-	}
-
-	/**
-	 *
-	 */
-	public void setPageViewPath(final String pageViewPath) {
-		this.pageViewPath = pageViewPath;
-	}
-
-	public boolean isRemoveContextPath() {
-		return removeContextPath;
-	}
-
-	public void setRemoveContextPath(boolean removeContextPath) {
-		this.removeContextPath = removeContextPath;
-	}
+        String adjustedUrl = url;
+        if (request.getDispatcherType() == DispatcherType.ERROR) {
+            adjustedUrl = publicationResolver.getLocalPageUrl(url);
+        }
+        return adjustedUrl;
+    }
 
 
-	public PageFactoryImpl getPageFactory () {
-		return pageFactory;
-	}
+    public String getPageViewName (final Page page) {
+        String viewName;
+        if (null != page.getPageTemplate().getMetadata() && page.getPageTemplate().getMetadata().containsKey("viewName")) {
+            viewName = (String) page.getPageTemplate().getMetadata().get("viewName").getValues().get(0);
+        } else {
+            viewName = page.getPageTemplate().getTitle();
+        }
 
-	public void setPageFactory (final PageFactoryImpl pageFactory) {
-		this.pageFactory = pageFactory;
-	}
+        return RenderUtils.fixUrl(getPageViewPath() + viewName.trim());
+    }
 
-	public PublicationResolver getPublicationResolver () {
-		return publicationResolver;
-	}
+    /**
+     * @return the pageViewPrefix
+     */
+    public String getPageViewPath () {
+        return pageViewPath;
+    }
 
-	public void setPublicationResolver (final PublicationResolver publicationResolver) {
-		this.publicationResolver = publicationResolver;
-	}
+    /**
+     *
+     */
+    public void setPageViewPath (final String pageViewPath) {
+        this.pageViewPath = pageViewPath;
+    }
 
-	/**
-	 * Create Date format for last-modified headers. Note that a constant
-	 * SimpleDateFormat is not allowed, it's access should be sync-ed.
-	 */
-	private DateFormat createDateFormat() {
-		final SimpleDateFormat dateFormat = new SimpleDateFormat(DATE_FORMAT, Locale.US);
-		dateFormat.setTimeZone(GMT);
-		return dateFormat;
-	}
+    public boolean isRemoveContextPath () {
+        return removeContextPath;
+    }
+
+    public void setRemoveContextPath (boolean removeContextPath) {
+        this.removeContextPath = removeContextPath;
+    }
+
+
+    public PageFactoryImpl getPageFactory () {
+        return pageFactory;
+    }
+
+    public void setPageFactory (final PageFactoryImpl pageFactory) {
+        this.pageFactory = pageFactory;
+    }
+
+    public PublicationResolver getPublicationResolver () {
+        return publicationResolver;
+    }
+
+    public void setPublicationResolver (final PublicationResolver publicationResolver) {
+        this.publicationResolver = publicationResolver;
+    }
+
+    /**
+     * Create Date format for last-modified headers. Note that a constant
+     * SimpleDateFormat is not allowed, it's access should be sync-ed.
+     */
+    private static DateFormat createDateFormat () {
+        final SimpleDateFormat dateFormat = new SimpleDateFormat(DATE_FORMAT, Locale.US);
+        dateFormat.setTimeZone(GMT);
+        return dateFormat;
+    }
 }

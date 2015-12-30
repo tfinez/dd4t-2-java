@@ -43,15 +43,15 @@ public class TaxonomyFactoryImpl extends BaseFactory implements TaxonomyFactory 
 
     private static final Logger LOG = LoggerFactory.getLogger(TaxonomyFactoryImpl.class);
     private static final TaxonomyFactoryImpl INSTANCE = new TaxonomyFactoryImpl();
+    private static final String NOT_FOUND_ERROR_MESSAGE = "Failed to read taxonomy {} from provider";
 
     private TaxonomyProvider taxonomyProvider;
-    private PayloadCacheProvider cacheProvider;
 
-    private TaxonomyFactoryImpl() {
+    private TaxonomyFactoryImpl () {
         LOG.debug("Create new instance");
     }
 
-    public static TaxonomyFactoryImpl getInstance() {
+    public static TaxonomyFactoryImpl getInstance () {
         return INSTANCE;
     }
 
@@ -64,7 +64,7 @@ public class TaxonomyFactoryImpl extends BaseFactory implements TaxonomyFactory 
      * @throws IOException if said taxonomy cannot be found or an error occurred while fetching it
      */
     @Override
-    public Keyword getTaxonomy(String taxonomyURI) throws IOException {
+    public Keyword getTaxonomy (String taxonomyURI) throws IOException {
         LOG.debug("Enter getTaxonomy with uri: {}", taxonomyURI);
 
         CacheElement<Keyword> cacheElement = cacheProvider.loadPayloadFromLocalCache(taxonomyURI);
@@ -89,7 +89,7 @@ public class TaxonomyFactoryImpl extends BaseFactory implements TaxonomyFactory 
                         cacheProvider.storeInItemCache(taxonomyURI, cacheElement, tcmUri.getPublicationId(), tcmUri.getItemId());
                         LOG.debug("Added taxonomy with uri: {} to cache", taxonomyURI);
                     } catch (ItemNotFoundException | ParseException | SerializationException e) {
-                        LOG.error("Failed to read taxonomy {} from provider", taxonomyURI, e);
+                        LOG.error(NOT_FOUND_ERROR_MESSAGE, taxonomyURI, e);
                         throw new IOException(e);
                     }
                 } else {
@@ -109,8 +109,8 @@ public class TaxonomyFactoryImpl extends BaseFactory implements TaxonomyFactory 
         return taxonomy;
     }
 
-    private Keyword deserialize (final String taxonomySource, final Class<KeywordImpl> keywordClass) throws SerializationException {
-        return SerializerFactory.deserialize(taxonomySource,keywordClass);
+    private static Keyword deserialize (final String taxonomySource, final Class<KeywordImpl> keywordClass) throws SerializationException {
+        return SerializerFactory.deserialize(taxonomySource, keywordClass);
     }
 
     /**
@@ -125,7 +125,7 @@ public class TaxonomyFactoryImpl extends BaseFactory implements TaxonomyFactory 
      * @throws IOException if said taxonomy cannot be found or an error occurred while fetching it
      */
     @Override
-    public Keyword getTaxonomyFilterBySchema(String taxonomyURI, String schemaURI) throws IOException {
+    public Keyword getTaxonomyFilterBySchema (String taxonomyURI, String schemaURI) throws IOException {
         LOG.debug("Enter getTaxonomyFilterBySchema with uri: {} and schema: {}", taxonomyURI, schemaURI);
 
         String key = taxonomyURI + schemaURI;
@@ -153,9 +153,10 @@ public class TaxonomyFactoryImpl extends BaseFactory implements TaxonomyFactory 
                     } catch (ItemNotFoundException e) {
                         cacheElement.setPayload(null);
                         cacheProvider.storeInItemCache(taxonomyURI, cacheElement);
+                        LOG.error(e.getLocalizedMessage(), e);
                         throw new IOException("Taxonomy with uri: " + taxonomyURI + " not found.");
                     } catch (ParseException | SerializationException e) {
-                        LOG.error("Failed to read taxonomy " + taxonomyURI + " from provider", e);
+                        LOG.error(NOT_FOUND_ERROR_MESSAGE, taxonomyURI, e);
                         throw new IOException(e);
                     }
                 } else {
@@ -169,17 +170,18 @@ public class TaxonomyFactoryImpl extends BaseFactory implements TaxonomyFactory 
         }
 
         if (taxonomy == null) {
-            throw new IOException("Failed to read taxonomy " + taxonomyURI + " from provider");
+            throw new IOException(NOT_FOUND_ERROR_MESSAGE);
         }
 
         return taxonomy;
     }
 
-    public void setCacheProvider(PayloadCacheProvider cacheProvider) {
+    @Override
+    public void setCacheProvider (PayloadCacheProvider cacheProvider) {
         this.cacheProvider = cacheProvider;
     }
 
-    public void setTaxonomyProvider(TaxonomyProvider taxonomyProvider) {
+    public void setTaxonomyProvider (TaxonomyProvider taxonomyProvider) {
         this.taxonomyProvider = taxonomyProvider;
     }
 }

@@ -31,58 +31,52 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-//import com.tridion.storage.StorageManagerFactory;
-//import com.tridion.storage.StorageTypeMapping;
-//import com.tridion.storage.dao.BaseDAO;
-//import com.tridion.storage.dao.WrappableDAO;
-//import com.tridion.storage.persistence.JPABaseDAO;
-
 /**
  * Provides access to taxonomies published to a Content Delivery database. It returns keywords with all their parent/
  * children relationships resolved. It also provides the capability to retrieve related items (i.e. Tridion items that
  * use each Keyword in the taxonomy directly).
- *
+ * <p/>
  * TODO TODO TODO. Proper interface (same for client and service)
- * TODO: Proper overrides!!
- * * TODO: decompress!
+ * TODO: Proper overrides
+ * TODO: decompress
+ *
  * @author Mihai Cadariu
  */
 public class BrokerTaxonomyProvider extends BaseBrokerProvider implements TaxonomyProvider {
 
-	public static final String SELECT_RELATED_KEYWORDS = "select distinct(rk) from RelatedKeyword rk, ItemMeta im" +
-			" where rk.publicationId = :publicationId and rk.taxonomyId = :taxonomyId and im.itemType = :itemType and rk.itemId = im.itemId and rk.publicationId = im.publicationId";
-	private static final String SELECT_RELATED_COMPONENTS_BY_SCHEMA = "select distinct(rk) from RelatedKeyword rk, ItemMeta im, ComponentMeta cm" +
-			" where rk.publicationId = :publicationId and rk.taxonomyId = :taxonomyId and im.itemType = 16 and rk.itemId = im.itemId and rk.publicationId = im.publicationId and" +
-			" cm.publicationId = im.publicationId and cm.itemId = im.itemId and cm.schemaId = :schemaId";
+    public static final String SELECT_RELATED_KEYWORDS = "select distinct(rk) from RelatedKeyword rk, ItemMeta im" + " where rk.publicationId = :publicationId and rk.taxonomyId = :taxonomyId and im.itemType = :itemType and rk.itemId = im.itemId and rk.publicationId = im.publicationId";
+    private static final String SELECT_RELATED_COMPONENTS_BY_SCHEMA = "select distinct(rk) from RelatedKeyword rk, ItemMeta im, ComponentMeta cm" +
+            " where rk.publicationId = :publicationId and rk.taxonomyId = :taxonomyId and im.itemType = 16 and rk.itemId = im.itemId and rk.publicationId = im.publicationId and" +
+            " cm.publicationId = im.publicationId and cm.itemId = im.itemId and cm.schemaId = :schemaId";
 
-	/**
-	 * Retrieves the Keyword object model with all its Parent/Children relationships resloved.
-	 *
-	 * @param taxonomyURI String representing the taxonomy TCMURI
-	 * @return Keyword the resolved taxonomy with its parent/children relationships
-	 * @throws StorageException if something went wrong during accessing the CD DB
-	 */
+    /**
+     * Retrieves the Keyword object model with all its Parent/Children relationships resloved.
+     *
+     * @param taxonomyURI String representing the taxonomy TCMURI
+     * @return Keyword the resolved taxonomy with its parent/children relationships
+     * @throws StorageException if something went wrong during accessing the CD DB
+     */
 
-	public Keyword getTaxonomy(String taxonomyURI) throws StorageException {
-		TaxonomyFactory factory = new TaxonomyFactory();
+    public Keyword getTaxonomy (String taxonomyURI) throws StorageException {
+        TaxonomyFactory factory = new TaxonomyFactory();
 
-		return factory.getTaxonomyKeywords(taxonomyURI);
-	}
+        return factory.getTaxonomyKeywords(taxonomyURI);
+    }
 
-	/**
-	 * Returns a list of RelatedKeyword objects representing the usage of each Keyword under the given taxonomy URI
-	 * and its direct using item. Returned items are only of the given type.
-	 *
-	 * @param taxonomyURI String representing the root taxonomy Keyword TCMURI
-	 * @param itemType    int representing the item type id to retrieve
-	 * @return List a list of RelatedKeyword objects holding item usage information
-	 * @throws ParseException   if the given Keyword URI does not represent a valid TCMURI
-	 * @throws StorageException if something went wrong during accessing the CD DB
-	 */
+    /**
+     * Returns a list of RelatedKeyword objects representing the usage of each Keyword under the given taxonomy URI
+     * and its direct using item. Returned items are only of the given type.
+     *
+     * @param taxonomyURI String representing the root taxonomy Keyword TCMURI
+     * @param itemType    int representing the item type id to retrieve
+     * @return List a list of RelatedKeyword objects holding item usage information
+     * @throws ParseException   if the given Keyword URI does not represent a valid TCMURI
+     * @throws StorageException if something went wrong during accessing the CD DB
+     */
 
-	public List<RelatedKeyword> getRelatedItems(String taxonomyURI, int itemType) throws ParseException, StorageException {
-		TCMURI taxonomyTcmUri = new TCMURI(taxonomyURI);
-		int publicationId = taxonomyTcmUri.getPublicationId();
+    public List<RelatedKeyword> getRelatedItems (String taxonomyURI, int itemType) throws ParseException, StorageException {
+        TCMURI taxonomyTcmUri = new TCMURI(taxonomyURI);
+        int publicationId = taxonomyTcmUri.getPublicationId();
 
 		Map<String, Object> queryParams = new HashMap<>();
 		queryParams.put("publicationId", publicationId);
@@ -93,26 +87,25 @@ public class BrokerTaxonomyProvider extends BaseBrokerProvider implements Taxono
 //		return getJPADAO(publicationId).executeQueryListResult(SELECT_RELATED_KEYWORDS, queryParams);
 	}
 
-	/**
-	 * Returns a list of RelatedKeyword objects representing the usage of each Keyword under the given taxonomy URI
-	 * and its direct using item. Returned items are only Components based on the given Schema URI.
-	 *
-	 * @param taxonomyURI String representing the root taxonomy Keyword TCMURI
-	 * @param schemaURI   String representing the filter for classified related Components to return for each Keyword
-	 * @return List a list of RelatedKeyword objects holding item usage information
-	 * @throws ParseException   if the given Keyword URI does not represent a valid TCMURI
-	 * @throws StorageException if something went wrong during accessing the CD DB
-	 */
-	public List<RelatedKeyword> getRelatedComponentsBySchema(String taxonomyURI, String schemaURI)
-			throws ParseException, StorageException {
-		TCMURI taxonomyTcmUri = new TCMURI(taxonomyURI);
-		TCMURI schemaTcmUri = new TCMURI(schemaURI);
-		int publicationId = taxonomyTcmUri.getPublicationId();
+    /**
+     * Returns a list of RelatedKeyword objects representing the usage of each Keyword under the given taxonomy URI
+     * and its direct using item. Returned items are only Components based on the given Schema URI.
+     *
+     * @param taxonomyURI String representing the root taxonomy Keyword TCMURI
+     * @param schemaURI   String representing the filter for classified related Components to return for each Keyword
+     * @return List a list of RelatedKeyword objects holding item usage information
+     * @throws ParseException   if the given Keyword URI does not represent a valid TCMURI
+     * @throws StorageException if something went wrong during accessing the CD DB
+     */
+    public List<RelatedKeyword> getRelatedComponentsBySchema (String taxonomyURI, String schemaURI) throws ParseException, StorageException {
+        TCMURI taxonomyTcmUri = new TCMURI(taxonomyURI);
+        TCMURI schemaTcmUri = new TCMURI(schemaURI);
+        int publicationId = taxonomyTcmUri.getPublicationId();
 
-		Map<String, Object> queryParams = new HashMap<>();
-		queryParams.put("publicationId", publicationId);
-		queryParams.put("taxonomyId", taxonomyTcmUri.getItemId());
-		queryParams.put("schemaId", schemaTcmUri.getItemId());
+        Map<String, Object> queryParams = new HashMap<>();
+        queryParams.put("publicationId", publicationId);
+        queryParams.put("taxonomyId", taxonomyTcmUri.getItemId());
+        queryParams.put("schemaId", schemaTcmUri.getItemId());
 
 		//todo implement
 		return null;
@@ -142,11 +135,13 @@ public class BrokerTaxonomyProvider extends BaseBrokerProvider implements Taxono
 //		throw new StorageException("Cannot find JPABaseDAO. Please check your storage bindings.");
 //	}
 
-	@Override public String getTaxonomyByURI (final String taxonomyURI, final boolean resolveContent) throws ItemNotFoundException, SerializationException {
-		return null;
-	}
+    @Override
+    public String getTaxonomyByURI (final String taxonomyURI, final boolean resolveContent) throws ItemNotFoundException, SerializationException {
+        return null;
+    }
 
-	@Override public String getTaxonomyFilterBySchema (final String taxonomyURI, final String schemaURI) throws ItemNotFoundException, SerializationException {
-		return null;
-	}
+    @Override
+    public String getTaxonomyFilterBySchema (final String taxonomyURI, final String schemaURI) throws ItemNotFoundException, SerializationException {
+        return null;
+    }
 }

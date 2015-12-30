@@ -21,7 +21,8 @@ import org.dd4t.core.serializers.Serializer;
 import org.dd4t.core.serializers.impl.json.JSONSerializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+
+import javax.annotation.Resource;
 
 /**
  * Factory class to allow easy access for deserialization / serialization
@@ -32,56 +33,56 @@ import org.springframework.beans.factory.annotation.Autowired;
  * <p/>
  * TODO: rework for databind
  *
- * @Author R. Kempees
- * @Since 06/06/14.
+ * @author R. Kempees
+ * @since 06/06/14.
  */
 public class SerializerFactory {
 
-	private static final Logger LOG = LoggerFactory.getLogger(SerializerFactory.class);
-	private static final SerializerFactory INSTANCE = new SerializerFactory();
+    private static final Logger LOG = LoggerFactory.getLogger(SerializerFactory.class);
+    private static final SerializerFactory INSTANCE = new SerializerFactory();
 
-	@Autowired
-	private Serializer serializer = null;
+    @Resource
+    private Serializer serializer = null;
 
-	private SerializerFactory () {
-		LOG.debug("Init SerializerFactory.");
-	}
+    private SerializerFactory () {
+        LOG.debug("Init SerializerFactory.");
+    }
 
-	public SerializerFactory (final JSONSerializer serializerInstance) {
-	}
+    public SerializerFactory (final JSONSerializer serializerInstance) {
+    }
 
-	/**
-	 * This is not normally used, but for Unit Testing purposes.
-	 * <p/>
-	 * For normal use, use Spring injection.
-	 *
-	 * @param serializer
-	 */
-	public static void setSerializer (org.dd4t.core.serializers.Serializer serializer) {
-		if (INSTANCE != null) {
-			INSTANCE.serializer = serializer;
-		}
-	}
-
-
-	public static SerializerFactory getInstance () {
-		return INSTANCE;
-	}
+    /**
+     * This is not normally used, but for Unit Testing purposes.
+     * <p/>
+     * For normal use, use Spring injection.
+     *
+     * @param serializer
+     */
+    public static void setSerializer (org.dd4t.core.serializers.Serializer serializer) {
+        if (INSTANCE != null) {
+            INSTANCE.serializer = serializer;
+        }
+    }
 
 
-	/**
-	 * Deserialize a Tridion DD4T content String.
-	 * <p/>
-	 * Uses the concrete implementation configured in the context configuration.
-	 *
-	 * @param content
-	 * @param aClass
-	 * @param <T>     Concrete Type of DD4T model object
-	 * @return Deserialized DD4T Model Object.
-	 * @throws SerializationException
-	 */
-	public static <T> T deserialize (String content, Class<T> aClass) throws SerializationException {
-		LOG.trace("Using Serializer: {}", INSTANCE.serializer.getClass());
-		return INSTANCE.serializer.deserialize(content, aClass);
-	}
+    public static SerializerFactory getInstance () {
+        return INSTANCE;
+    }
+
+
+    /**
+     * Deserialize a Tridion DD4T content String.
+     * <p/>
+     * Uses the concrete implementation configured in the context configuration.
+     *
+     * @param content
+     * @param aClass
+     * @param <T>     Concrete Type of DD4T model object
+     * @return Deserialized DD4T Model Object.
+     * @throws SerializationException
+     */
+    public static <T> T deserialize (String content, Class<T> aClass) throws SerializationException {
+        LOG.trace("Using Serializer: {}", INSTANCE.serializer.getClass());
+        return INSTANCE.serializer.deserialize(content, aClass);
+    }
 }

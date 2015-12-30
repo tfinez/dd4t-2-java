@@ -9,7 +9,7 @@
                             http://cxf.apache.org/jaxws 
                             http://cxf.apache.org/schemas/jaxws.xsd
                             http://www.directwebremoting.org/schema/spring-dwr
-                            http://www.directwebremoting.org/schema/spring-dwr-2.0.xsd
+
                             http://www.springframework.org/schema/context
                             http://www.springframework.org/schema/context/spring-context-3.0.xsd
                             http://www.springframework.org/schema/util 
@@ -100,7 +100,7 @@
     <bean id="dataBinder" class="org.dd4t.databind.builder.json.JsonDataBinder" factory-method="getInstance" init-method="init">
         <!-- Set this value to your own models package root -->
         <property name="viewModelPackageRoot" value="org.dd4t.databind.viewmodel.test" />
-        <property name="viewModelMetaKeyName" value="viewName" />
+        <property name="viewModelMetaKeyName" value="view" />
         <!-- Set these to your need. If you only want regular Components set to true -->
         <property name="renderDefaultComponentModelsOnly" value="true" />
         <property name="renderDefaultComponentsIfNoModelFound" value="true" />
@@ -115,5 +115,11 @@
     <!-- DD4T factories entry point  -->
     <bean id="databindFactory" class="org.dd4t.databind.DataBindFactory" factory-method="getInstance">
         <property name="dataBinder" ref="dataBinder" />
-    </bean>	
+    </bean>
+
+	<!-- Experience Manager -->
+	<bean id="xpmRender" class="org.dd4t.mvc.utils.XPMRenderer" factory-method="getInstance">
+		<property name="enabled" value="false"/>
+		<property name="cmsUrl" value="http://cms-url"/>
+	</bean>
 </beans>

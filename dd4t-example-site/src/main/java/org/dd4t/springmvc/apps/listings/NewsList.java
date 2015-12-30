@@ -40,9 +40,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class NewsList extends AbstractController {
-    private static Logger logger = LoggerFactory.getLogger(NewsList.class);
 
-    public static String NEWSLIST_COMPS_KEY = "news_list_comps_key";
+    public static final String NEWSLIST_COMPS_KEY = "news_list_comps_key";
+    private static final Logger LOG = LoggerFactory.getLogger(NewsList.class);
     
     private int newsSchema;
     
@@ -69,8 +69,8 @@ public class NewsList extends AbstractController {
 	protected ModelAndView handleRequestInternal(HttpServletRequest request,
 			HttpServletResponse response) throws Exception {
 		
-		if(logger.isDebugEnabled()){
-			logger.debug("Entering NewsList");
+		if(LOG.isDebugEnabled()){
+			LOG.debug("Entering NewsList");
 		}
 		
 		ModelAndView mav = new ModelAndView("newslist");
@@ -125,8 +125,7 @@ public class NewsList extends AbstractController {
                      * Load the components from the factory. Note that we're using getEmbeddedComponent
                      * as we know that in the example these components are found embedded on the page.
                      */
-                    ComponentPresentation comp = 
-                    		(ComponentPresentation) componentPresentationFactory.getComponentPresentation(result, null);
+                    ComponentPresentation comp = componentPresentationFactory.getComponentPresentation(result, null);
                     
                     if(comp != null){
                     	comps.add(comp);
@@ -136,14 +135,14 @@ public class NewsList extends AbstractController {
                 mav.addObject(NEWSLIST_COMPS_KEY, comps);
 
             } catch (StorageException se) {
-                logger.error("Error while RUNNING query: " + se.getMessage(),
+                LOG.error("Error while RUNNING query: " + se.getMessage(),
                         se);
             } catch (Exception ex) {
-                logger.error("Error while PARSING query: " + ex.getMessage(),
+                LOG.error("Error while PARSING query: " + ex.getMessage(),
                         ex);
             }
         } catch (Exception ex) {
-            logger.error("Error while BUILDING query: " + ex.getMessage(), ex);
+            LOG.error("Error while BUILDING query: " + ex.getMessage(), ex);
         }
 		
 		return mav;

@@ -118,8 +118,7 @@ public class DynamicPageController extends BaseDD4TController {
         if(logger.isDebugEnabled())
             logger.debug("Request shortened to " + URL);
 
-        Page pageModel =
-                (Page) genericPageFactory.findPageByUrl(URL, publication);
+        Page pageModel = genericPageFactory.findPageByUrl(URL, publication);
       //          new BasicRequestContext(request));
       
         request.setAttribute(Constants.PAGE_MODEL_KEY, pageModel);      
@@ -145,8 +144,8 @@ public class DynamicPageController extends BaseDD4TController {
         
         long navmodeldone = System.currentTimeMillis();
         
-        if(logger.isDebugEnabled()){
-            logger.debug("Built navigationmodel: " + navigationModel+" in "+(navmodeldone-contentmodeldone)+" milliseconds.");
+        if(LOGGER.isDebugEnabled()){
+            LOGGER.debug("Built navigationmodel: " + navigationModel+" in "+(navmodeldone-contentmodeldone)+" milliseconds.");
         }  
         request.setAttribute(Constants.NAVIGATION_MODEL_KEY, navigationModel);  
           */

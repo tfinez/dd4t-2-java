@@ -35,6 +35,7 @@ import org.dd4t.providers.ComponentPresentationProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -44,155 +45,169 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * Provides access to Dynamic Component Presentations stored in the Content Delivery database. It uses CD API to retrieve
  * raw DCP content from the database. Access to these objects is not cached, and as such must be cached externally.
- * TODO: we shouldn't throw exceptions if a DCP is not found?
  */
 public class BrokerComponentPresentationProvider extends BaseBrokerProvider implements ComponentPresentationProvider {
 
-	private static final Logger LOG = LoggerFactory.getLogger(BrokerComponentPresentationProvider.class);
-	private static final Map<Integer, ComponentPresentationFactory> FACTORY_CACHE = new ConcurrentHashMap<>();
-	private static final String ERROR_MESSAGE = "Component Presentation not found for componentId: %d, templateId: %d and publicationId: %d";
+    private static final Logger LOG = LoggerFactory.getLogger(BrokerComponentPresentationProvider.class);
+    private static final Map<Integer, ComponentPresentationFactory> FACTORY_CACHE = new ConcurrentHashMap<>();
+    private static final String ERROR_MESSAGE = "Component Presentation not found for componentId: %d, templateId: %d and publicationId: %d";
 
-	private Class<? extends org.dd4t.contentmodel.ComponentPresentation> concreteComponentPresentation;
-	private Class<? extends ComponentTemplate> concreteComponentTemplateImpl;
+    private Class<? extends org.dd4t.contentmodel.ComponentPresentation> concreteComponentPresentation;
+    private Class<? extends ComponentTemplate> concreteComponentTemplateImpl;
 
 
-	/**
-	 * Retrieves content of a Dynamic Component Presentation by looking up its componentId and publicationId.
-	 * A templateId is not provided, so the DCP with the highest linking priority is retrieved.
-	 * <p/>
-	 * <b>Note: This method performs significantly slower than getDynamicComponentPresentation(int, int, int)!
-	 * Do provide a templateId!</b>
-	 *
-	 * @param componentId   int representing the Component item id
-	 * @param publicationId int representing the Publication id of the DCP
-	 * @return String representing the content of the DCP
-	 * @throws ItemNotFoundException if the requested DCP cannot be found
-	 */
-	@Override public org.dd4t.contentmodel.ComponentPresentation getDynamicComponentPresentation (int componentId, int publicationId) throws ItemNotFoundException, SerializationException {
-		return getDynamicComponentPresentation(componentId, 0, publicationId);
-	}
+    /**
+     * Retrieves content of a Dynamic Component Presentation by looking up its componentId and publicationId.
+     * A templateId is not provided, so the DCP with the highest linking priority is retrieved.
+     * <p/>
+     * <b>Note: This method performs significantly slower than getDynamicComponentPresentation(int, int, int)!
+     * Do provide a templateId!</b>
+     *
+     * @param componentId   int representing the Component item id
+     * @param publicationId int representing the Publication id of the DCP
+     * @return String representing the content of the DCP
+     * @throws ItemNotFoundException if the requested DCP cannot be found
+     */
+    @Override
+    public String getDynamicComponentPresentation (int componentId, int publicationId) throws ItemNotFoundException, SerializationException {
+        return getDynamicComponentPresentation(componentId, 0, publicationId);
+    }
 
-	/**
-	 * Retrieves content of a Dynamic Component Presentation by looking up its componentId, templateId and publicationId.
-	 *
-	 * @param componentId   int representing the Component item id
-	 * @param templateId    int representing the Component Template item id
-	 * @param publicationId int representing the Publication id of the DCP
-	 * @return String representing the content of the DCP
-	 * @throws ItemNotFoundException if the requested DCP cannot be found
-	 */
-	@Override public org.dd4t.contentmodel.ComponentPresentation getDynamicComponentPresentation (int componentId, int templateId, int publicationId) throws ItemNotFoundException, SerializationException {
-		ComponentPresentationFactory factory = FACTORY_CACHE.get(publicationId);
-		int actualTemplateId = templateId;
-		if (factory == null) {
-			factory = new ComponentPresentationFactory(publicationId);
-			FACTORY_CACHE.put(publicationId, factory);
-		}
+    /**
+     * Retrieves content of a Dynamic Component Presentation by looking up its componentId, templateId and publicationId.
+     *
+     * @param componentId   int representing the Component item id
+     * @param templateId    int representing the Component Template item id
+     * @param publicationId int representing the Publication id of the DCP
+     * @return String representing the content of the DCP
+     * @throws ItemNotFoundException if the requested DCP cannot be found
+     */
+    @Override
+    public String getDynamicComponentPresentation (int componentId, int templateId, int publicationId) throws ItemNotFoundException, SerializationException {
+        ComponentPresentationFactory factory = FACTORY_CACHE.get(publicationId);
 
-		ComponentPresentation result;
-		String resultString;
-		if (templateId != 0) {
-			result = factory.getComponentPresentation(componentId, templateId);
+        if (factory == null) {
+            factory = new ComponentPresentationFactory(publicationId);
+            FACTORY_CACHE.put(publicationId, factory);
+        }
 
-			if (result == null) {
-				LOG.info(String.format(ERROR_MESSAGE, componentId, templateId, publicationId));
-				throw new ItemNotFoundException(String.format(ERROR_MESSAGE, componentId, templateId, publicationId));
-			}
+        ComponentPresentation result;
+        String resultString;
+        if (templateId != 0) {
+            result = factory.getComponentPresentation(componentId, templateId);
 
-			resultString = result.getContent();
-		} else {
-			result = factory.getComponentPresentationWithHighestPriority(componentId);
-			if (result == null) {
-				LOG.info(String.format(ERROR_MESSAGE, componentId, templateId, publicationId));
-				throw new ItemNotFoundException(String.format(ERROR_MESSAGE, componentId, templateId, publicationId));
-			}
-			actualTemplateId = result.getComponentTemplateId();
-			resultString = result.getContent();
-		}
+            if (result == null) {
+                LOG.info(String.format(ERROR_MESSAGE, componentId, templateId, publicationId));
+                throw new ItemNotFoundException(String.format(ERROR_MESSAGE, componentId, templateId, publicationId));
+            }
 
-		if (!StringUtils.isEmpty(resultString)) {
-			return constructComponentPresentation(decodeAndDecompressContent(resultString), publicationId, componentId, actualTemplateId, result);
-		}
-		return null;
-	}
+            resultString = result.getContent();
+        } else {
+            result = factory.getComponentPresentationWithHighestPriority(componentId);
+            if (result == null) {
+                LOG.info(String.format(ERROR_MESSAGE, componentId, templateId, publicationId));
+                throw new ItemNotFoundException(String.format(ERROR_MESSAGE, componentId, templateId, publicationId));
+            }
 
-	/**
-	 * Convenience method to obtain a list of component presentations for the same template id.
-	 * <p/>
-	 * TODO
-	 *
-	 * @param itemUris      array of found Component TCM IDs
-	 * @param templateId    the CT Id to fetch DCPs on
-	 * @param publicationId the current Publication Id
-	 * @return a List of Component Presentations
-	 * @throws org.dd4t.core.exceptions.ItemNotFoundException
-	 * @throws org.dd4t.core.exceptions.SerializationException
-	 */
-	@Override public List<org.dd4t.contentmodel.ComponentPresentation> getDynamicComponentPresentations (final String[] itemUris, final int templateId, final int publicationId) throws ItemNotFoundException, SerializationException {
-		return new ArrayList<>();
-	}
+            resultString = result.getContent();
+        }
 
-	private org.dd4t.contentmodel.ComponentPresentation constructComponentPresentation (String componentSource, int publicationId, int componentId, int componentTemplateId, ComponentPresentation componentPresentation) {
-		try {
+        if (!StringUtils.isEmpty(resultString)) {
+            return decodeAndDecompressContent(resultString);
+        }
+        return null;
+    }
+
+    /**
+     * Convenience method to obtain a list of component presentations for the same template id.
+     *
+     * @param itemUris      array of found Component TCM_ZERO_URI IDs
+     * @param templateId    the CT Id to fetch DCPs on
+     * @param publicationId the current Publication Id
+     * @return a List of Component Presentations
+     * @throws org.dd4t.core.exceptions.ItemNotFoundException
+     * @throws org.dd4t.core.exceptions.SerializationException
+     */
+    @Override
+    public List<String> getDynamicComponentPresentations (final String[] itemUris, final int templateId, final int publicationId) throws ItemNotFoundException, SerializationException {
+        List<String> componentPresentations = new ArrayList<>();
+
+        for (String itemUri : itemUris) {
+            try {
+                org.dd4t.core.util.TCMURI uri = new org.dd4t.core.util.TCMURI(itemUri);
+                componentPresentations.add(getDynamicComponentPresentation(uri.getItemId(), templateId, publicationId));
+            } catch (ParseException e) {
+                throw new SerializationException(e);
+            }
+        }
+        return componentPresentations;
+    }
+
+    // TODO Remove after testing
+    @Deprecated
+    private org.dd4t.contentmodel.ComponentPresentation constructComponentPresentation (String componentSource, int publicationId, int componentId, int componentTemplateId, ComponentPresentation componentPresentation) {
+        try {
 
 			final ComponentPresentationMeta componentPresentationMeta = new ComponentPresentationMetaFactory(publicationId).getMeta(componentId, componentTemplateId);
 			ComponentMeta componentMeta = new ComponentMetaFactory(publicationId).getMeta(componentId);
 
-			final org.dd4t.contentmodel.ComponentPresentation componentPresentationResult = this.concreteComponentPresentation.newInstance();
-			final ComponentTemplate componentTemplate = this.concreteComponentTemplateImpl.newInstance();
-			componentPresentationResult.setRawComponentContent(componentSource);
-			componentPresentationResult.setIsDynamic(componentPresentation.isDynamic());
-			componentTemplate.setId(new TCMURI(publicationId, componentTemplateId, 32, 0).toString());
-//			todo implement getTitle() and getLastPublishDate()
-//			componentTemplate.setTitle(componentPresentationMeta.getTemplateMeta().getTitle());
-//			final DateTime dateTime = new DateTime(componentPresentationMeta.getTemplateMeta().getLastPublishDate());
-//			componentTemplate.setRevisionDate(dateTime);
-			final Map<String, Field> metadata = new HashMap<>();
+            final org.dd4t.contentmodel.ComponentPresentation componentPresentationResult = this.concreteComponentPresentation.newInstance();
+            final ComponentTemplate componentTemplate = this.concreteComponentTemplateImpl.newInstance();
+            componentPresentationResult.setRawComponentContent(componentSource);
+            componentPresentationResult.setIsDynamic(componentPresentation.isDynamic());
+            componentTemplate.setId(new TCMURI(publicationId, componentTemplateId, 32, 0).toString());
+            componentTemplate.setTitle(componentPresentationMeta.getTemplateMeta().getTitle());
+            final DateTime dateTime = new DateTime(componentPresentationMeta.getTemplateMeta().getLastPublishDate());
+            componentTemplate.setRevisionDate(dateTime);
+            final Map<String, Field> metadata = new HashMap<>();
 
-			// TODO: this is a hack
-			// Component Template Custom Meta is not published with
-			// the component template, so we cannot read the viewName. Therefore, the only supported way for now is use the lower cased
-			// template name as view model name...
+            // TODO: this is a hack - Update: can now be removed!
+            // Component Template Custom Meta is not published with
+            // the component template, so we cannot read the viewName.
+            // Therefore, the only supported way for now is use the lower cased
+            // template name as view model name...
 
-			// We should actually fix this in the Generate Dynamic Component TBB to also
-			// include CT data.
+            // We should actually fix this in the Generate Dynamic Component TBB to also
+            // include CT data.
 
-			final List<String> values = new ArrayList<>();
-			values.add(stringToDashCase(componentTemplate.getTitle()));
+            final List<String> values = new ArrayList<>();
+            values.add(stringToDashCase(componentTemplate.getTitle()));
 
-			TextField field = new TextField();
-			field.setName(Constants.VIEW_NAME_FIELD);
-			field.setTextValues(values);
-			metadata.put(Constants.VIEW_NAME_FIELD, field);
+            TextField field = new TextField();
+            field.setName(Constants.VIEW_NAME_FIELD);
+            field.setTextValues(values);
+            metadata.put(Constants.VIEW_NAME_FIELD, field);
 
-			componentTemplate.setMetadata(metadata);
-			componentPresentationResult.setComponentTemplate(componentTemplate);
-			return componentPresentationResult;
-		} catch (InstantiationException | IllegalAccessException e) {
-			LOG.error(e.getLocalizedMessage(), e);
-		}
-		return null;
-	}
+            componentTemplate.setMetadata(metadata);
+            componentPresentationResult.setComponentTemplate(componentTemplate);
+            return componentPresentationResult;
+        } catch (InstantiationException | StorageException | IllegalAccessException e) {
+            LOG.error(e.getLocalizedMessage(), e);
+        }
+        return null;
+    }
 
-	// TODO: move away from this.
-	/**
-	 * Utility method to fix a constant value (probably a CMS-able value from
-	 * Tridion), so it can be used inside a URL: lower case and all spaces and
-	 * underscores are replaced by dashes (-).
-	 */
-	public static String stringToDashCase (String value) {
-		if (value == null) {
-			return "";
-		}
-		return value.replaceAll("[^a-zA-Z0-9]", "_").replaceAll("([_]+)", "_").toLowerCase();
-	}
+    // TODO: move away from this.
 
+    /**
+     * Utility method to fix a constant value (probably a CMS-able value from
+     * Tridion), so it can be used inside a URL: lower case and all spaces and
+     * underscores are replaced by dashes (-).
+     */
+    public static String stringToDashCase (String value) {
+        if (value == null) {
+            return "";
+        }
+        return value.replaceAll("[^a-zA-Z0-9]", "_").replaceAll("([_]+)", "_").toLowerCase();
+    }
+// TODO Remove after testing
 
-	public void setConcreteComponentPresentation (final Class<? extends org.dd4t.contentmodel.ComponentPresentation> concreteComponentPresentation) {
-		this.concreteComponentPresentation = concreteComponentPresentation;
-	}
+    public void setConcreteComponentPresentation (final Class<? extends org.dd4t.contentmodel.ComponentPresentation> concreteComponentPresentation) {
+        this.concreteComponentPresentation = concreteComponentPresentation;
+    }
 
-	public void setConcreteComponentTemplateImpl (final Class<? extends ComponentTemplate> concreteComponentTemplateImpl) {
-		this.concreteComponentTemplateImpl = concreteComponentTemplateImpl;
-	}
+    // TODO Remove after testing
+    public void setConcreteComponentTemplateImpl (final Class<? extends ComponentTemplate> concreteComponentTemplateImpl) {
+        this.concreteComponentTemplateImpl = concreteComponentTemplateImpl;
+    }
 }

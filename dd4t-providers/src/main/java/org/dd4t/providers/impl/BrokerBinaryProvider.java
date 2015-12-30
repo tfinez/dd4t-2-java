@@ -67,10 +67,10 @@ public class BrokerBinaryProvider extends BaseBrokerProvider implements BinaryPr
 			// TODO: check if this actually is the Mime Type
 			binary.setMimeType(binaryMeta.getType());
 
-			// TODO: binaryMeta.getCustomMeta();
-			//binaryMeta.getDescription();
-			//binaryMeta.getPath();
-			//binaryMeta.getVariantId();
+            // TODO: binaryMeta.getCustomMeta();
+            //binaryMeta.getDescription();
+            //binaryMeta.getPath();
+            //binaryMeta.getVariantId();
 
 			BinaryData content = new BinaryFactory().getBinary(binaryUri.getPublicationId(), binaryUri.getItemId(), binaryMeta.getVariantId());
 			if (content == null) {
@@ -101,9 +101,9 @@ public class BrokerBinaryProvider extends BaseBrokerProvider implements BinaryPr
 	public byte[] getBinaryContentById (int id, int publication) throws ItemNotFoundException {
 		BinaryData content = new BinaryFactory().getBinary(id, publication);
 
-		if (content == null) {
-			throw new ItemNotFoundException("Unable to find binary content by id '" + id + "' and publication '" + publication + "'.");
-		}
+        if (content == null) {
+            throw new ItemNotFoundException("Unable to find binary content by id '" + id + "' and publication '" + publication + "'.");
+        }
 
 		try {
 			return content.getBytes();
@@ -112,16 +112,16 @@ public class BrokerBinaryProvider extends BaseBrokerProvider implements BinaryPr
 		}
 	}
 
-	/**
-	 * Retrieves the byte array content of a Tridion binary based on its URL.
-	 *
-	 * @param url         string representing the path portion of the URL of the binary
-	 * @param publication int representing the publication id
-	 * @return byte[] the byte array of the binary content
-	 * @throws ItemNotFoundException if the item identified by id and publication was not found
-	 */
-	@Override
-	public byte[] getBinaryContentByURL (String url, int publication) throws ItemNotFoundException {
+    /**
+     * Retrieves the byte array content of a Tridion binary based on its URL.
+     *
+     * @param url         string representing the path portion of the URL of the binary
+     * @param publication int representing the publication id
+     * @return byte[] the byte array of the binary content
+     * @throws ItemNotFoundException if the item identified by id and publication was not found
+     */
+    @Override
+    public byte[] getBinaryContentByURL (String url, int publication) throws ItemNotFoundException {
 
 		BinaryMeta binaryMeta = new DynamicMetaRetriever().getBinaryMetaByURL(url);
 		return getBinaryContentById((int) binaryMeta.getId(), publication);

@@ -41,31 +41,32 @@ public class FieldSetImpl implements FieldSet {
     private static final Logger LOG = LoggerFactory.getLogger(FieldSetImpl.class);
 
     private final Map<String, Object> rawContent = new HashMap<>();
-	@JsonIgnore
+    @JsonIgnore
     private Map<String, Field> content = new HashMap<>();
 
-    @JsonProperty("Schema")
+    @JsonProperty ("Schema")
     private Schema schema;
 
-    public Schema getSchema() {
+    @Override
+    public Schema getSchema () {
         return schema;
     }
 
-    public void setSchema(Schema schema) {
+    @Override
+    public void setSchema (Schema schema) {
         this.schema = schema;
     }
 
     @JsonAnyGetter
-    public Map<String, Object> getRawContent() {
+    public Map<String, Object> getRawContent () {
         return rawContent;
     }
 
     @JsonAnySetter
-    public void set(String fieldKey, JsonNode embeddedField) {
+    public void set (String fieldKey, JsonNode embeddedField) {
 
         try {
             // The basefield annotations will map the fields to concrete types
-	        // TODO: see if this breaks with XML
             BaseField b = JsonDataBinder.getGenericMapper().readValue(embeddedField.toString(), BaseField.class);
             content.put(fieldKey, b);
         } catch (IOException e) {
@@ -80,14 +81,16 @@ public class FieldSetImpl implements FieldSet {
      *
      * @return a map of field objects representing the content
      */
-    public Map<String, Field> getContent() {
+    @Override
+    public Map<String, Field> getContent () {
         return content;
     }
 
     /**
      * Set the content
      */
-    public void setContent(Map<String, Field> content) {
+    @Override
+    public void setContent (Map<String, Field> content) {
         this.content = content;
     }
 }

@@ -20,8 +20,11 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.joda.JodaModule;
+import com.fasterxml.jackson.module.afterburner.AfterburnerModule;
+import org.dd4t.contentmodel.Field;
 import org.dd4t.core.serializers.Serializer;
 import org.dd4t.core.exceptions.SerializationException;
+import org.dd4t.databind.serializers.json.BaseFieldMixIn;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,18 +38,17 @@ import java.io.IOException;
 public class JSONSerializer implements Serializer {
 
     private static final Logger LOG = LoggerFactory.getLogger(JSONSerializer.class);
-    /**
-     * Jackson's ObjectMapper
-     */
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
     static {
         MAPPER.registerModule(new JodaModule());
         MAPPER.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
+        MAPPER.addMixIn(Field.class, BaseFieldMixIn.class);
+        MAPPER.registerModule(new AfterburnerModule());
     }
 
     @Override
-    public <T> T deserialize(final String content, final Class<T> aClass) throws SerializationException {
+    public <T> T deserialize (final String content, final Class<T> aClass) throws SerializationException {
         try {
             return MAPPER.readValue(content, aClass);
         } catch (IOException e) {
@@ -56,7 +58,7 @@ public class JSONSerializer implements Serializer {
     }
 
     @Override
-    public String serialize(final Object item) throws SerializationException {
+    public String serialize (final Object item) throws SerializationException {
         try {
             LOG.debug("Serializing a {}", item.getClass());
             return MAPPER.writeValueAsString(item);

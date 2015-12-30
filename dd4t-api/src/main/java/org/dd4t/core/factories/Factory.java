@@ -29,14 +29,12 @@ public interface Factory {
     /**
      * @return list of Processors
      */
-    public List<Processor> getProcessors ();
+    List<Processor> getProcessors ();
 
     /**
      * @param processors list of Processors
      */
-    public void setProcessors (List<Processor> processors);
+    void setProcessors (List<Processor> processors);
 
-
-
-    public void setCacheProvider(PayloadCacheProvider cacheAgent);
+    void setCacheProvider (PayloadCacheProvider cacheAgent);
 }

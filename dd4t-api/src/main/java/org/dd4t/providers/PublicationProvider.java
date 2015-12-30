@@ -16,8 +16,7 @@
 
 package org.dd4t.providers;
 
-import org.dd4t.core.exceptions.SerializationException;
-import org.dd4t.core.util.PublicationDescriptor;
+import org.dd4t.contentmodel.PublicationDescriptor;
 
 /**
  * dd4t-2
@@ -25,18 +24,21 @@ import org.dd4t.core.util.PublicationDescriptor;
  * @author R. Kempees
  */
 public interface PublicationProvider {
-	int discoverPublicationId(final String url) throws SerializationException;
-	String discoverPublicationUrl(final int publicationId);
+    int discoverPublicationIdByPageUrlPath (final String url);
 
-	String discoverPublicationPath (int publicationId);
+    int discoverPublicationByBaseUrl (String fullUrl);
 
-	String discoverImagesUrl (int publicationId);
+    String discoverPublicationUrl (final int publicationId);
 
-	String discoverImagesPath (int publicationId);
+    String discoverPublicationPath (int publicationId);
 
-	String discoverPublicationTitle (int publicationId);
+    String discoverImagesUrl (int publicationId);
 
-	String discoverPublicationKey (int publicationId);
+    String discoverImagesPath (int publicationId);
 
-	PublicationDescriptor getPublicationDescriptor(int publicationId);
+    String discoverPublicationTitle (int publicationId);
+
+    String discoverPublicationKey (int publicationId);
+
+    PublicationDescriptor getPublicationDescriptor (int publicationId);
 }

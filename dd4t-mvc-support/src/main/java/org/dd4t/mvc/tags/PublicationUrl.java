@@ -17,7 +17,7 @@
 package org.dd4t.mvc.tags;
 
 import org.apache.commons.lang3.StringUtils;
-import org.dd4t.mvc.utils.PublicationResolverFactoryImpl;
+import org.dd4t.mvc.utils.PublicationResolverFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,17 +28,17 @@ import org.slf4j.LoggerFactory;
  */
 public class PublicationUrl {
 
-	private static final Logger LOG = LoggerFactory.getLogger(PublicationUrl.class);
+    private static final Logger LOG = LoggerFactory.getLogger(PublicationUrl.class);
 
-	public static String getPublicationUrl () {
-		String publicationUrl = PublicationResolverFactoryImpl.getInstance().getPublicationResolver().getPublicationUrl();
-		if (!StringUtils.isEmpty(publicationUrl)) {
-			if (publicationUrl.endsWith("/") && publicationUrl.length() > 1) {
-				publicationUrl = publicationUrl.substring(0, publicationUrl.length() - 1);
-			}
-			LOG.debug("Returning publication URL: {}", publicationUrl);
-			return publicationUrl.toLowerCase();
-		}
-		return "";
-	}
+    public static String getPublicationUrl () {
+        String publicationUrl = PublicationResolverFactory.getPublicationResolver().getPublicationUrl();
+        if (!StringUtils.isEmpty(publicationUrl)) {
+            if (publicationUrl.endsWith("/") && publicationUrl.length() > 1) {
+                publicationUrl = publicationUrl.substring(0, publicationUrl.length() - 1);
+            }
+            LOG.debug("Returning publication URL: {}", publicationUrl);
+            return publicationUrl.toLowerCase();
+        }
+        return "";
+    }
 }

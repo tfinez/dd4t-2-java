@@ -17,6 +17,7 @@
 package org.dd4t.core.serializers.impl.json;
 
 import com.fasterxml.jackson.databind.util.StdConverter;
+import org.apache.commons.lang3.StringUtils;
 import org.dd4t.contentmodel.FieldType;
 
 /**
@@ -26,7 +27,27 @@ import org.dd4t.contentmodel.FieldType;
 public class FieldTypeConverter extends StdConverter<Object, FieldType> {
 
     @Override
-    public FieldType convert(Object value) {
-        return value == null ? null : value instanceof FieldType ? (FieldType) value : FieldType.findByName((String) value);
+    public FieldType convert (Object value) {
+        if (value == null) {
+            return null;
+        }
+
+        if (value instanceof FieldType) {
+            return (FieldType) value;
+        }
+
+        if (value instanceof String) {
+            String possibleTypeValue = (String) value;
+            if (StringUtils.isNumeric(possibleTypeValue)) {
+                return FieldType.findByValue(Integer.parseInt(possibleTypeValue));
+            } else {
+                return FieldType.findByName(possibleTypeValue);
+            }
+        }
+
+        if (value instanceof Integer) {
+            return FieldType.findByValue((int) value);
+        }
+        return null;
     }
 }
