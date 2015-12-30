@@ -36,7 +36,10 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Type;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 /**
  * JsonModelConverter.
@@ -46,7 +49,7 @@ import java.util.*;
  */
 public class JsonModelConverter extends AbstractModelConverter implements ModelConverter {
 	private static final Logger LOG = LoggerFactory.getLogger(JsonModelConverter.class);
-	private Class<org.dd4t.contentmodel.Field> concreteFieldImpl;
+	private Class<? extends org.dd4t.contentmodel.Field> concreteFieldImpl;
 
 	public JsonModelConverter () {
 
