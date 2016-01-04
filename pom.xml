@@ -18,8 +18,8 @@
         <module>dd4t-test</module>
         <module>dd4t-mvc-support</module>
         <module>dd4t-test-spring-web</module>
-        <module>dd4t-example-site</module>
-        <module>spring-mvc-archetype</module>
+        <!--<module>dd4t-example-site</module>-->
+        <!--<module>spring-mvc-archetype</module>-->
     </modules>
 
     <name>${project.groupId}:${project.artifactId}</name>
@@ -113,6 +113,23 @@
                 <configuration>
                     <source>1.7</source>
                     <target>1.7</target>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>2.5</version>
+                <configuration>
+                    <classifier>${build.classifier}</classifier>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-war-plugin</artifactId>
+                <version>2.4</version>
+                <configuration>
+                    <classifier>${build.classifier}</classifier>
                 </configuration>
             </plugin>
         </plugins>

@@ -9,6 +9,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
+    <artifactId>dd4t-mvc-support</artifactId>
     <name>${project.groupId}:${project.artifactId}</name>
     <description>Provides support for MVC frameworks.</description>
     <url>https://github.com/dd4t</url>
@@ -68,22 +69,24 @@
             </resource>
         </resources>
     </build>
-    <artifactId>dd4t-mvc-support</artifactId>
     <dependencies>
         <dependency>
             <groupId>org.dd4t</groupId>
             <artifactId>dd4t-api</artifactId>
             <version>${project.version}</version>
+            <classifier>${build.classifier}</classifier>
         </dependency>
         <dependency>
             <groupId>org.dd4t</groupId>
             <artifactId>dd4t-core</artifactId>
             <version>${project.version}</version>
+            <classifier>${build.classifier}</classifier>
         </dependency>
         <dependency>
             <groupId>org.dd4t</groupId>
             <artifactId>dd4t-databind</artifactId>
             <version>${project.version}</version>
+            <classifier>${build.classifier}</classifier>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
