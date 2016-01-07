@@ -51,7 +51,6 @@
             <groupId>org.dd4t</groupId>
             <artifactId>dd4t-core</artifactId>
             <version>${project.version}</version>
-            <classifier>${build.classifier}</classifier>
         </dependency>
         <dependency>
             <groupId>javax.servlet</groupId>

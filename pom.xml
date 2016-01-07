@@ -115,23 +115,6 @@
                     <target>1.7</target>
                 </configuration>
             </plugin>
-
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
-                <version>2.5</version>
-                <configuration>
-                    <classifier>${build.classifier}</classifier>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-war-plugin</artifactId>
-                <version>2.4</version>
-                <configuration>
-                    <classifier>${build.classifier}</classifier>
-                </configuration>
-            </plugin>
         </plugins>
     </build>
     <dependencyManagement>
@@ -383,23 +366,6 @@
                     </plugin>
                 </plugins>
             </build>
-        </profile>
-
-        <profile>
-            <id>cd-7.1.0</id>
-            <properties>
-                <tridion.version>7.1.0</tridion.version>
-                <java.version>1.7</java.version>
-                <build.classifier>7.1.0</build.classifier>
-            </properties>
-        </profile>
-        <profile>
-            <id>cd-8.1.0</id>
-            <properties>
-                <tridion.version>8.1.0</tridion.version>
-                <java.version>1.8</java.version>
-                <build.classifier>8.1.0</build.classifier>
-            </properties>
         </profile>
     </profiles>
 </project>

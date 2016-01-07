@@ -30,6 +30,10 @@
     <profiles>
         <profile>
             <id>cd-7.1.0</id>
+            <properties>
+                <tridion.version>7.1.0</tridion.version>
+                <build.classifier>7.1.0</build.classifier>
+            </properties>
             <dependencies>
                 <!--
             If you use the Tridion Stack inside the web app,
@@ -173,6 +177,13 @@
                 </dependency>
             </dependencies>
         </profile>
+        <profile>
+            <id>cd-8.1.0</id>
+            <properties>
+                <tridion.version>8.1.0</tridion.version>
+                <build.classifier>8.1.0</build.classifier>
+            </properties>
+        </profile>
     </profiles>
 
     <build>
@@ -233,19 +244,16 @@
             <groupId>org.dd4t</groupId>
             <artifactId>dd4t-core</artifactId>
             <version>${project.version}</version>
-            <classifier>${build.classifier}</classifier>
         </dependency>
         <dependency>
             <groupId>org.dd4t</groupId>
             <artifactId>dd4t-mvc-support</artifactId>
             <version>${project.version}</version>
-            <classifier>${build.classifier}</classifier>
         </dependency>
         <dependency>
             <groupId>org.dd4t</groupId>
             <artifactId>dd4t-api</artifactId>
             <version>${project.version}</version>
-            <classifier>${build.classifier}</classifier>
         </dependency>
         <dependency>
             <groupId>org.dd4t</groupId>
@@ -290,8 +298,6 @@
             <groupId>javax.servlet</groupId>
             <artifactId>jstl</artifactId>
         </dependency>
-
-
 
 
         <!--

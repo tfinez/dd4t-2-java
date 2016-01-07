@@ -74,19 +74,16 @@
             <groupId>org.dd4t</groupId>
             <artifactId>dd4t-api</artifactId>
             <version>${project.version}</version>
-            <classifier>${build.classifier}</classifier>
         </dependency>
         <dependency>
             <groupId>org.dd4t</groupId>
             <artifactId>dd4t-core</artifactId>
             <version>${project.version}</version>
-            <classifier>${build.classifier}</classifier>
         </dependency>
         <dependency>
             <groupId>org.dd4t</groupId>
             <artifactId>dd4t-databind</artifactId>
             <version>${project.version}</version>
-            <classifier>${build.classifier}</classifier>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
