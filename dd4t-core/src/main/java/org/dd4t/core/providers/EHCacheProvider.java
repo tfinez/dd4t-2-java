@@ -49,19 +49,10 @@ public class EHCacheProvider implements PayloadCacheProvider, CacheInvalidator,
 	public static final String CACHE_NAME = "DD4T-Objects";
 	public static final String CACHE_NAME_DEPENDENCY = "DD4T-Dependencies";
 	public static final String DEPENDENT_KEY_FORMAT = "%s:%s";
-
-	{
-		CacheManager.getInstance().addCache(CACHE_NAME);
-		CacheManager.getInstance().addCache(CACHE_NAME_DEPENDENCY);
-	}
-	
+	public static final int ADJUST_TTL = 2;
+	private static final Logger LOG = LoggerFactory.getLogger(EHCacheProvider.class);
 	private final Cache cache = CacheManager.create().getCache(CACHE_NAME);
 	private final Cache dependencyCache = CacheManager.create().getCache(CACHE_NAME_DEPENDENCY);
-
-	private static final Logger LOG = LoggerFactory.getLogger(EHCacheProvider.class);
-
-	public static final int ADJUST_TTL = 2;
-
 	private int expiredTTL = 299;
 	private int cacheDependencyTTL = 299;
 	private int cacheTTL = 3599;
@@ -69,6 +60,22 @@ public class EHCacheProvider implements PayloadCacheProvider, CacheInvalidator,
 
 	EHCacheProvider() {
 		LOG.debug("Starting cache provider");
+	}
+
+	private static String getKey(Serializable key) {
+		String[] parts = ((String) key).split(":");
+		switch (parts.length) {
+			case 0:
+				return "";
+			case 1:
+				return String.format(DEPENDENT_KEY_FORMAT, parts[0], "");
+			default:
+				return String.format(DEPENDENT_KEY_FORMAT, parts[0], parts[1]);
+		}
+	}
+
+	private static String getKey(int publicationId, int itemId) {
+		return String.format(DEPENDENT_KEY_FORMAT, publicationId, itemId);
 	}
 
 	public boolean doCheckForPreview() {
@@ -113,7 +120,7 @@ public class EHCacheProvider implements PayloadCacheProvider, CacheInvalidator,
 	/**
 	 * Loads given object from the cache and returns it inside a CacheItem
 	 * wrapper.
-	 * 
+	 *
 	 * @param key
 	 *            String representing the cache key to retrieve a payload for
 	 * @return CacheElement object wrapping the actual payload. Return object
@@ -153,7 +160,7 @@ public class EHCacheProvider implements PayloadCacheProvider, CacheInvalidator,
 
 	/**
 	 * Store given item in the cache with a simple time-to-live property.
-	 * 
+	 *
 	 * @param key
 	 *            String representing the key to store the payload under
 	 * @param cacheElement
@@ -178,7 +185,7 @@ public class EHCacheProvider implements PayloadCacheProvider, CacheInvalidator,
 
 	/**
 	 * Store given item in the cache with a reference to supplied Tridion Item.
-	 * 
+	 *
 	 * @param key
 	 *            String representing the key to store the cacheItem under
 	 * @param cacheElement
@@ -347,22 +354,6 @@ public class EHCacheProvider implements PayloadCacheProvider, CacheInvalidator,
 						+ cacheDependencyTTL;
 		timeToLive += ADJUST_TTL;
 		dependentElement.setTimeToLive(timeToLive);
-	}
-
-	private static String getKey(Serializable key) {
-		String[] parts = ((String) key).split(":");
-		switch (parts.length) {
-		case 0:
-			return "";
-		case 1:
-			return String.format(DEPENDENT_KEY_FORMAT, parts[0], "");
-		default:
-			return String.format(DEPENDENT_KEY_FORMAT, parts[0], parts[1]);
-		}
-	}
-
-	private static String getKey(int publicationId, int itemId) {
-		return String.format(DEPENDENT_KEY_FORMAT, publicationId, itemId);
 	}
 
 	@Override
