@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <version>${version}</version>
     <groupId>${groupId}</groupId>
@@ -205,63 +205,63 @@
 
         <!-- Tridion Content Delivery (CD) -->
         <dependency>
-            <groupId>com.tridion.contentdelivery</groupId>
+            <groupId>com.tridion</groupId>
             <artifactId>cd_ambient</artifactId>
             <version>${tridion.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.tridion.contentdelivery</groupId>
+            <groupId>com.tridion</groupId>
             <artifactId>cd_broker</artifactId>
             <version>${tridion.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.tridion.contentdelivery</groupId>
+            <groupId>com.tridion</groupId>
             <artifactId>cd_cache</artifactId>
             <version>${tridion.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.tridion.contentdelivery</groupId>
+            <groupId>com.tridion</groupId>
             <artifactId>cd_core</artifactId>
             <version>${tridion.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.tridion.contentdelivery</groupId>
+            <groupId>com.tridion</groupId>
             <artifactId>cd_datalayer</artifactId>
             <version>${tridion.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.tridion.contentdelivery</groupId>
+            <groupId>com.tridion</groupId>
             <artifactId>cd_dynamic</artifactId>
             <version>${tridion.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.tridion.contentdelivery</groupId>
+            <groupId>com.tridion</groupId>
             <artifactId>cd_linking</artifactId>
             <version>${tridion.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.tridion.contentdelivery</groupId>
+            <groupId>com.tridion</groupId>
             <artifactId>cd_model</artifactId>
             <version>${tridion.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.tridion.contentdelivery</groupId>
+            <groupId>com.tridion</groupId>
             <artifactId>cd_preview_ambient</artifactId>
             <version>${tridion.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.tridion.contentdelivery</groupId>
+            <groupId>com.tridion</groupId>
             <artifactId>cd_session</artifactId>
             <version>${tridion.version}</version>
         </dependency>
         <!-- TODO
         <dependency>
-            <groupId>com.tridion.contentdelivery</groupId>
+            <groupId>com.tridion</groupId>
             <artifactId>cd_tcdl</artifactId>
             <version>${tridion.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.tridion.contentdelivery</groupId>
+            <groupId>com.tridion</groupId>
             <artifactId>cd_wai</artifactId>
             <version>${tridion.version}</version>
         </dependency>
