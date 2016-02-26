@@ -58,16 +58,27 @@ public class DefaultLinkResolver implements LinkResolver {
 	private boolean encodeUrl = true;
 	private String contextPath;
 
-	private DefaultLinkResolver () {
+	public DefaultLinkResolver () {
 		LOG.debug("Create new instance");
 	}
 
+	private static void verifyPublicationIsSet (final Component component) {
+		if (component.getPublication() == null) {
+			try {
+				TCMURI tcmUri = new TCMURI(component.getId());
+				component.setPublication(new PublicationImpl(TridionUtils.constructFullTcmPublicationUri(tcmUri.getPublicationId())));
+			} catch (ParseException e) {
+				LOG.error("Problem parsing the uri for component: " + component.getId(), e);
+			}
+		}
+	}
+	
 	@Override
 	public String resolve(ComponentPresentation cp)
 			throws ItemNotFoundException, SerializationException {
 		return resolve(cp.getComponent(), null);
 	}
-	
+
 	@Override public String resolve (Component component) throws ItemNotFoundException, SerializationException {
 		return resolve(component, null);
 	}
@@ -114,17 +125,6 @@ public class DefaultLinkResolver implements LinkResolver {
 			resolvedUrl = contextPath + resolvedUrl;
 		}
 		return resolvedUrl;
-	}
-
-	private static void verifyPublicationIsSet (final Component component) {
-		if (component.getPublication() == null) {
-			try {
-				TCMURI tcmUri = new TCMURI(component.getId());
-				component.setPublication(new PublicationImpl(TridionUtils.constructFullTcmPublicationUri(tcmUri.getPublicationId())));
-			} catch (ParseException e) {
-				LOG.error("Problem parsing the uri for component: " + component.getId(), e);
-			}
-		}
 	}
 
 	@Override public String resolve (String componentURI) throws ItemNotFoundException, SerializationException {

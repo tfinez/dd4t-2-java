@@ -58,7 +58,7 @@ public class EHCacheProvider implements PayloadCacheProvider, CacheInvalidator,
 	private int cacheTTL = 3599;
 	private boolean checkForPreview = false;
 
-	EHCacheProvider() {
+	public EHCacheProvider() {
 		LOG.debug("Starting cache provider");
 	}
 
