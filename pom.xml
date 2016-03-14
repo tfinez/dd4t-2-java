@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>org.dd4t</groupId>
     <artifactId>dd4t-parent</artifactId>
     <packaging>pom</packaging>
-    <version>2.0.5-SNAPSHOT</version>
+    <version>2.0.5-DXA-SNAPSHOT</version>
     <name>${project.groupId}:${project.artifactId}</name>
     <description>Parent for all DD4T projects.</description>
     <url>https://github.com/dd4t</url>
