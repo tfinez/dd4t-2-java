@@ -18,7 +18,11 @@ package org.dd4t.contentmodel.impl;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import org.dd4t.contentmodel.*;
+import org.dd4t.contentmodel.ComponentPresentation;
+import org.dd4t.contentmodel.GenericPage;
+import org.dd4t.contentmodel.HasMetadata;
+import org.dd4t.contentmodel.PageTemplate;
+import org.dd4t.contentmodel.StructureGroup;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,7 +40,7 @@ public class PageImpl extends BasePage implements GenericPage, HasMetadata {
     protected PageTemplate pageTemplate;
 
 	@JsonProperty("ComponentPresentations")
-    @JsonDeserialize(contentAs = ComponentPresentation.class)
+    @JsonDeserialize(contentAs = ComponentPresentationImpl.class)
     protected List<ComponentPresentation> componentPresentations;
 
 	@JsonProperty("StructureGroup") @JsonDeserialize(as = StructureGroupImpl.class)
@@ -48,17 +52,6 @@ public class PageImpl extends BasePage implements GenericPage, HasMetadata {
 
     public void setPageTemplate(PageTemplate pageTemplate) {
         this.pageTemplate = pageTemplate;
-    }
-
-    public List<ComponentPresentation> getComponentPresentations() {
-        if (componentPresentations == null) {
-            componentPresentations = new ArrayList<>();
-        }
-        return componentPresentations;
-    }
-
-    public void setComponentPresentations(List<ComponentPresentation> componentPresentations) {
-        this.componentPresentations = componentPresentations;
     }
 
     /**
@@ -95,6 +88,17 @@ public class PageImpl extends BasePage implements GenericPage, HasMetadata {
         if (this.getPageTemplate() != null) {
             this.getPageTemplate().setFileExtension(fileExtension);
         }
+    }
+
+    public List<ComponentPresentation> getComponentPresentations() {
+        if (componentPresentations == null) {
+            componentPresentations = new ArrayList<>();
+        }
+        return componentPresentations;
+    }
+
+    public void setComponentPresentations(List<ComponentPresentation> componentPresentations) {
+        this.componentPresentations = componentPresentations;
     }
 
     public StructureGroup getStructureGroup() {

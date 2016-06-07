@@ -17,14 +17,16 @@
 package org.dd4t.databind.builder.json;
 
 import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.datatype.joda.JodaModule;
 import org.apache.commons.lang3.StringUtils;
-import org.dd4t.contentmodel.*;
+import org.dd4t.contentmodel.Component;
+import org.dd4t.contentmodel.ComponentPresentation;
+import org.dd4t.contentmodel.ComponentTemplate;
+import org.dd4t.contentmodel.Field;
+import org.dd4t.contentmodel.Page;
 import org.dd4t.core.databind.BaseViewModel;
 import org.dd4t.core.databind.DataBinder;
 import org.dd4t.core.databind.TridionViewModel;
@@ -33,7 +35,6 @@ import org.dd4t.core.util.TCMURI;
 import org.dd4t.databind.DataBindFactory;
 import org.dd4t.databind.builder.BaseDataBinder;
 import org.dd4t.databind.serializers.json.BaseFieldMixIn;
-import org.dd4t.databind.serializers.json.ComponentPresentationDeserializer;
 import org.dd4t.databind.util.DataBindConstants;
 import org.dd4t.databind.util.JsonUtils;
 import org.slf4j.Logger;
@@ -42,7 +43,11 @@ import org.slf4j.LoggerFactory;
 import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.text.ParseException;
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * @author R. Kempees
@@ -66,58 +71,8 @@ public class JsonDataBinder extends BaseDataBinder implements DataBinder {
 		return INSTANCE;
 	}
 
-	public <T extends Page> T buildPage (final String source, final Class<T> aClass) throws SerializationException {
-		try {
-			return GENERIC_MAPPER.readValue(source, aClass);
-		} catch (IOException e) {
-			LOG.error(DataBindConstants.MESSAGE_ERROR_DESERIALIZING, e);
-			throw new SerializationException(e);
-		}
-	}
-
-	public ComponentPresentation buildDynamicComponentPresentation (final ComponentPresentation componentPresentation, final Class<? extends Component> aClass) throws SerializationException {
-		final Set<String> modelNames = new HashSet<>();
-		try {
-			String viewModelName = DataBindFactory.findComponentTemplateViewName(componentPresentation.getComponentTemplate());
-			final Component component = DataBindFactory.buildComponent(componentPresentation.getRawComponentContent(), aClass);
-			componentPresentation.setComponent(component);
-			String rootElementName = component.getSchema().getRootElement();
-
-			if (StringUtils.isEmpty(viewModelName)){
-				LOG.error("Viewmodel name not found on CT: {}. Not proceeding to build models", componentPresentation.getComponentTemplate().getId());
-				return componentPresentation;
-			}
-
-			modelNames.add(viewModelName);
-			if (!rootElementName.equals(viewModelName)) {
-				modelNames.add(rootElementName);
-			}
-			final JsonNode rawComponentData = GENERIC_MAPPER.readTree(componentPresentation.getRawComponentContent());
-			final Map<String, BaseViewModel> models = DataBindFactory.buildModels(rawComponentData, modelNames, componentPresentation.getComponentTemplate().getId());
-
-			componentPresentation.setViewModel(models);
-		}catch (SerializationException | IOException e) {
-			LOG.error(e.getLocalizedMessage(),e);
-		}
-		return componentPresentation;
-	}
-
-	public <T extends Component> T buildComponent (final Object source, final Class<T> aClass) throws SerializationException {
-		try {
-			if (source instanceof JsonNode) {
-				final JsonParser parser = ((JsonNode) source).traverse();
-				return GENERIC_MAPPER.readValue(parser, aClass);
-			} else if (source instanceof String) {
-				return GENERIC_MAPPER.readValue((String) source, aClass);
-			} else {
-				LOG.error("Cannot parse type: " + source.getClass().toString());
-				return null;
-			}
-
-		} catch (IOException e) {
-			LOG.error(DataBindConstants.MESSAGE_ERROR_DESERIALIZING, e);
-			throw new SerializationException(e);
-		}
+	public static ObjectMapper getGenericMapper() {
+		return GENERIC_MAPPER;
 	}
 
 	public Map<String, BaseViewModel> buildModels (final Object source, final Set<String> modelNames, final String templateUri) throws SerializationException {
@@ -179,26 +134,58 @@ public class JsonDataBinder extends BaseDataBinder implements DataBinder {
 		return null;
 	}
 
-	public static ObjectMapper getGenericMapper () {
-		return GENERIC_MAPPER;
+	public <T extends Page> T buildPage(final String source, final Class<T> aClass) throws SerializationException {
+		try {
+			return GENERIC_MAPPER.readValue(source, aClass);
+		} catch (IOException e) {
+			LOG.error(DataBindConstants.MESSAGE_ERROR_DESERIALIZING, e);
+			throw new SerializationException(e);
+		}
 	}
 
-	@PostConstruct @Override protected void init () {
+	public ComponentPresentation buildDynamicComponentPresentation(final ComponentPresentation componentPresentation, final Class<? extends Component> aClass) throws SerializationException {
+		final Set<String> modelNames = new HashSet<>();
+		try {
+			String viewModelName = DataBindFactory.findComponentTemplateViewName(componentPresentation.getComponentTemplate());
+			final Component component = DataBindFactory.buildComponent(componentPresentation.getRawComponentContent(), aClass);
+			componentPresentation.setComponent(component);
+			String rootElementName = component.getSchema().getRootElement();
 
-		this.configureMapper();
-		this.checkViewModelConfiguration();
-		this.scanAndLoadModels();
+			if (StringUtils.isEmpty(viewModelName)) {
+				LOG.error("Viewmodel name not found on CT: {}. Not proceeding to build models", componentPresentation.getComponentTemplate().getId());
+				return componentPresentation;
+			}
+
+			modelNames.add(viewModelName);
+			if (!rootElementName.equals(viewModelName)) {
+				modelNames.add(rootElementName);
+			}
+			final JsonNode rawComponentData = GENERIC_MAPPER.readTree(componentPresentation.getRawComponentContent());
+			final Map<String, BaseViewModel> models = DataBindFactory.buildModels(rawComponentData, modelNames, componentPresentation.getComponentTemplate().getId());
+
+			componentPresentation.setViewModel(models);
+		} catch (SerializationException | IOException e) {
+			LOG.error(e.getLocalizedMessage(), e);
+		}
+		return componentPresentation;
 	}
 
-	protected void configureMapper () {
-		// This is the hook where view models are custom generated
-		final ComponentPresentationDeserializer componentPresentationDeserializer = new ComponentPresentationDeserializer(this.concreteComponentPresentationImpl, this.concreteComponentTemplateImpl, this.concreteComponentImpl);
-		final SimpleModule module = new SimpleModule("ComponentPresentationDeserializerModule", new Version(1, 0, 0, "RELEASE", "org.dd4t", "dd4t-databind"));
-		module.addDeserializer(ComponentPresentation.class, componentPresentationDeserializer);
-		GENERIC_MAPPER.registerModule(module);
-		GENERIC_MAPPER.addMixInAnnotations(Field.class, BaseFieldMixIn.class);
+	public <T extends Component> T buildComponent(final Object source, final Class<T> aClass) throws SerializationException {
+		try {
+			if (source instanceof JsonNode) {
+				final JsonParser parser = ((JsonNode) source).traverse();
+				return GENERIC_MAPPER.readValue(parser, aClass);
+			} else if (source instanceof String) {
+				return GENERIC_MAPPER.readValue((String) source, aClass);
+			} else {
+				LOG.error("Cannot parse type: " + source.getClass().toString());
+				return null;
+			}
 
-		LOG.debug("Mapper configured for: {} and {}", this.concreteComponentPresentationImpl.toString(), this.concreteComponentTemplateImpl.toString());
+		} catch (IOException e) {
+			LOG.error(DataBindConstants.MESSAGE_ERROR_DESERIALIZING, e);
+			throw new SerializationException(e);
+		}
 	}
 
 	public String findComponentTemplateViewName (ComponentTemplate template) throws IOException {
@@ -238,5 +225,18 @@ public class JsonDataBinder extends BaseDataBinder implements DataBinder {
 			}
 		}
 		return null;
+	}
+
+	@PostConstruct
+	@Override
+	protected void init() {
+
+		this.configureMapper();
+		this.checkViewModelConfiguration();
+		this.scanAndLoadModels();
+	}
+
+	protected void configureMapper() {
+		GENERIC_MAPPER.addMixInAnnotations(Field.class, BaseFieldMixIn.class);
 	}
 }
