@@ -18,7 +18,12 @@ package org.dd4t.contentmodel.impl;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import org.dd4t.contentmodel.*;
+import org.dd4t.contentmodel.Category;
+import org.dd4t.contentmodel.Field;
+import org.dd4t.contentmodel.OrganizationalItem;
+import org.dd4t.contentmodel.Publication;
+import org.dd4t.contentmodel.RepositoryLocalItem;
+import org.dd4t.contentmodel.Schema;
 import org.dd4t.core.util.DateUtils;
 import org.joda.time.DateTime;
 
@@ -124,18 +129,7 @@ public abstract class BaseRepositoryLocalItem extends BaseItem implements Reposi
     }
 
     public void setRevisionDate(DateTime date) {
-        this.revisionDateAsString = date.toString();
-    }
-
-    public DateTime getLastPublishedDate() {
-        if (lastPublishedDateAsString == null || lastPublishedDateAsString.isEmpty()) {
-            return new DateTime();
-        }
-        return DateUtils.convertStringToDate(lastPublishedDateAsString);
-    }
-
-    public void setLastPublishedDate(DateTime date) {
-        this.lastPublishedDateAsString = DateUtils.convertDateToString(date);
+        this.revisionDateAsString = DateUtils.convertDateToString(date);
     }
 
     public int getVersion() {
@@ -146,6 +140,13 @@ public abstract class BaseRepositoryLocalItem extends BaseItem implements Reposi
     public void setVersion(int version) {
 
         this.version = version;
+    }
+
+    public DateTime getLastPublishedDate() {
+        if (lastPublishedDateAsString == null || lastPublishedDateAsString.isEmpty()) {
+            return new DateTime();
+        }
+        return DateUtils.convertStringToDate(lastPublishedDateAsString);
     }
 
     public Map<String, Field> getMetadata() {
@@ -159,6 +160,10 @@ public abstract class BaseRepositoryLocalItem extends BaseItem implements Reposi
         this.metadata = metadata;
     }
 
+    public void setLastPublishedDate(DateTime date) {
+        this.lastPublishedDateAsString = DateUtils.convertDateToString(date);
+    }
+
     public List<Category> getCategories() {
         return categories;
     }
@@ -167,8 +172,9 @@ public abstract class BaseRepositoryLocalItem extends BaseItem implements Reposi
         this.categories = categories;
     }
 
-	public Schema getSchema() {
-	    return schema;
+
+    public Schema getSchema() {
+        return schema;
 	}
 
 	public void setSchema(Schema schema) {
