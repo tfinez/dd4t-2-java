@@ -5,7 +5,7 @@
     <parent>
         <artifactId>dd4t-parent</artifactId>
         <groupId>org.dd4t</groupId>
-        <version>2.0.10-DXA</version>
+        <version>2.0.11-DXA</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -180,7 +180,7 @@
         <profile>
             <id>web8</id>
             <properties>
-                <tridion.version>8.2.0-1011</tridion.version>
+                <tridion.version>8.3.0-SNAPSHOT</tridion.version>
                 <build.classifier>web8</build.classifier>
             </properties>
         </profile>
