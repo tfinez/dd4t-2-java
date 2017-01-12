@@ -42,13 +42,12 @@
         <json-smart-version>1.1.1</json-smart-version>
         <xalan-version>2.7.1</xalan-version>
         <sqljdbc4-version>4.0.0</sqljdbc4-version>
-        <spring.version>3.2.0.RELEASE</spring.version>
+        <spring.version>4.3.5.RELEASE</spring.version>
         <logback.version>1.0.13</logback.version>
         <slf4j.version>1.6.4</slf4j.version>
         <joda-time.version>2.2</joda-time.version>
         <guava.version>17.0</guava.version>
         <javax.servlet-api.version>3.0.1</javax.servlet-api.version>
-        <spring.version>3.2.0.RELEASE</spring.version>
         <tridion.version>7.1.0</tridion.version>
         <hibernate.version>4.0.1.Final</hibernate.version>
         <hibernate-jpa.version>1.0.1.Final</hibernate-jpa.version>
