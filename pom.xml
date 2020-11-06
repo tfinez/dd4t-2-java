@@ -447,7 +447,7 @@
 
                 <jaxb-api.version>2.1</jaxb-api.version>
                 <jaxb-impl.version>2.1.12</jaxb-impl.version>
-                <javassist.version>3.18.1-GA</javassist.version>
+                <javassist.version>3.27.0-GA</javassist.version>
 
 
 
