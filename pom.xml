@@ -72,7 +72,7 @@
         <resteasy.version>3.0.8.Final</resteasy.version>
 
 
-        <sdl.odata.client.version>2.0.5-SNAPSHOT</sdl.odata.client.version>
+        <sdl.odata.client.version>2.9.0</sdl.odata.client.version>
 
 
         <selenium-java.version>2.42.2</selenium-java.version>
