@@ -250,7 +250,7 @@
                 <commons-dbcp-version>1.4</commons-dbcp-version>
                 <commons-pool-version>1.5.3</commons-pool-version>
                 <dom4j.version>1.6.1</dom4j.version>
-                <hibernate.version>4.0.1.Final</hibernate.version>
+                <hibernate.version>5.4.25.Final</hibernate.version>
                 <hibernate.jpa.version>1.0.1.Final</hibernate.jpa.version>
                 <json-smart-version>1.1.1</json-smart-version>
                 <logback.version>1.0.13</logback.version>
